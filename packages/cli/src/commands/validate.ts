@@ -1,4 +1,4 @@
-import { lintSpec, LintIssue } from '@forge/core';
+import { lintSpec, LintIssue } from '@nimai/core';
 
 export interface ValidateOptions {
   strictArchitecture?: boolean;
@@ -26,7 +26,7 @@ export function runValidate(specPath: string, options: ValidateOptions = {}): vo
   const missing = hard.filter(i => i.type === 'missing_section');
 
   if (hard.length > 0) {
-    console.log(`forge validate: ${hard.length} issue(s) found\n`);
+    console.log(`nimai validate: ${hard.length} issue(s) found\n`);
 
     if (blanks.length > 0) {
       console.log(`Blank fields (${blanks.length}):`);

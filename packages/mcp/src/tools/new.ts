@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { loadTemplate } from '@forge/core';
+import { loadTemplate } from '@nimai/core';
 import { ForgeNewInput, ForgeNewOutput } from '../contract';
 import { FORGE_ROOT } from '../prompts';
 import { z } from 'zod';

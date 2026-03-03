@@ -1,8 +1,8 @@
 {
-  "name": "@forge/core",
+  "name": "@nimai/core",
   "version": "0.1.0",
-  "description": "FORGE core library — template loading, lint engine, context extraction. No LLM dependencies.",
-  "keywords": ["forge", "spec", "lint", "ai", "llm", "specification", "template"],
+  "description": "Nimai core library — template loading, lint engine, context extraction. No LLM dependencies.",
+  "keywords": ["nimai", "forge", "spec", "lint", "ai", "llm", "specification", "template"],
   "license": "MIT",
   "repository": {
     "type": "git",

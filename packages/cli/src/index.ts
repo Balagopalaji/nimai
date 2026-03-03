@@ -8,8 +8,8 @@ import { runNew } from './commands/new';
 const program = new Command();
 
 program
-  .name('forge')
-  .description('FORGE — spec ops CLI for AI work\n\nCommands: spec, validate, review, new\nPlanned (M3b): forge run — execute a spec end-to-end (deferred pending usage data)')
+  .name('nimai')
+  .description('Nimai — spec ops CLI for AI work\n\nCommands: spec, validate, review, new\nPlanned (M3b): nimai run — execute a spec end-to-end (deferred pending usage data)')
   .version('0.1.0');
 
 program
@@ -21,7 +21,7 @@ program
   .option('--out <file>', 'Write output to file instead of stdout')
   .option('--validate', 'Run lint on the generated spec after --standalone generation (not valid with --hosted)')
   .option('--allow-invalid', 'Exit 0 even when --validate finds issues (requires --validate)')
-  .option('--model <id>', 'Model ID for --standalone mode (overrides .forge/config.yaml)')
+  .option('--model <id>', 'Model ID for --standalone mode (overrides .nimai/config.yaml)')
   .action((request: string, options: {
     hosted?: boolean;
     standalone?: boolean;

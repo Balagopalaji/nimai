@@ -24,9 +24,9 @@ function run(
   };
 }
 
-// ─── forge validate ────────────────────────────────────────────────────────────
+// ─── nimai validate ────────────────────────────────────────────────────────────
 
-describe('forge validate', () => {
+describe('nimai validate', () => {
   it('exits 0 and reports no issues for a clean spec', () => {
     const { stdout, exitCode } = run(['validate', VALID_SPEC]);
     expect(exitCode).toBe(0);
@@ -46,15 +46,15 @@ describe('forge validate', () => {
   });
 });
 
-// ─── forge spec --hosted ───────────────────────────────────────────────────────
+// ─── nimai spec --hosted ───────────────────────────────────────────────────────
 
-describe('forge spec --hosted', () => {
-  it('exits 0 and outputs FORGE SPEC BUNDLE header', () => {
+describe('nimai spec --hosted', () => {
+  it('exits 0 and outputs NIMAI SPEC BUNDLE header', () => {
     const { stdout, exitCode } = run([
       'spec', 'add JWT auth to Express', '--hosted', '--repo', FORGE_ROOT,
     ]);
     expect(exitCode).toBe(0);
-    expect(stdout).toContain('FORGE SPEC BUNDLE');
+    expect(stdout).toContain('NIMAI SPEC BUNDLE');
   });
 
   it('output contains the populated Prompt 1 header', () => {
@@ -72,9 +72,9 @@ describe('forge spec --hosted', () => {
   });
 });
 
-// ─── forge spec --standalone (no API key) ─────────────────────────────────────
+// ─── nimai spec --standalone (no API key) ─────────────────────────────────────
 
-describe('forge spec --standalone (no API key)', () => {
+describe('nimai spec --standalone (no API key)', () => {
   it('exits 1 with clear message when ANTHROPIC_API_KEY is missing', () => {
     const { stderr, exitCode } = run(
       ['spec', 'build something', '--standalone'],
@@ -85,9 +85,9 @@ describe('forge spec --standalone (no API key)', () => {
   });
 });
 
-// ─── forge review ─────────────────────────────────────────────────────────────
+// ─── nimai review ─────────────────────────────────────────────────────────────
 
-describe('forge review', () => {
+describe('nimai review', () => {
   it('exits 0 and outputs Reviewer Prompt header', () => {
     const { stdout, exitCode } = run(['review', VALID_SPEC]);
     expect(exitCode).toBe(0);
@@ -106,7 +106,7 @@ describe('forge review', () => {
   });
 
   it('writes to --out file when specified', () => {
-    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'forge-review-'));
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'nimai-review-'));
     const outFile = path.join(tmpDir, 'reviewer.md');
 
     const { exitCode } = run(['review', VALID_SPEC, '--out', outFile]);
@@ -118,11 +118,11 @@ describe('forge review', () => {
   });
 });
 
-// ─── forge new ────────────────────────────────────────────────────────────────
+// ─── nimai new ────────────────────────────────────────────────────────────────
 
-describe('forge new', () => {
+describe('nimai new', () => {
   it('exits 0 and creates the spec file', () => {
-    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'forge-new-'));
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'nimai-new-'));
     const outFile = path.join(tmpDir, 'my-spec.md');
 
     const { stdout, exitCode } = run(['new', outFile]);
@@ -134,7 +134,7 @@ describe('forge new', () => {
   });
 
   it('exits 1 if file already exists without --force', () => {
-    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'forge-new-'));
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'nimai-new-'));
     const outFile = path.join(tmpDir, 'spec.md');
     fs.writeFileSync(outFile, 'existing content');
 
@@ -146,7 +146,7 @@ describe('forge new', () => {
   });
 
   it('exits 0 with --force even if file exists', () => {
-    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'forge-new-'));
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'nimai-new-'));
     const outFile = path.join(tmpDir, 'spec.md');
     fs.writeFileSync(outFile, 'existing content');
 
@@ -159,7 +159,7 @@ describe('forge new', () => {
   });
 
   it('creates parent directories automatically', () => {
-    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'forge-new-'));
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'nimai-new-'));
     const outFile = path.join(tmpDir, 'nested', 'deep', 'spec.md');
 
     const { exitCode } = run(['new', outFile]);
@@ -170,9 +170,9 @@ describe('forge new', () => {
   });
 });
 
-// ─── forge --version / --help ─────────────────────────────────────────────────
+// ─── nimai --version / --help ─────────────────────────────────────────────────
 
-describe('forge binary', () => {
+describe('nimai binary', () => {
   it('--version outputs 0.1.0', () => {
     const { stdout, exitCode } = run(['--version']);
     expect(exitCode).toBe(0);

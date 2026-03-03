@@ -1,8 +1,8 @@
 {
-  "name": "forge-workspace",
+  "name": "nimai-workspace",
   "private": true,
   "version": "0.1.0",
-  "description": "FORGE — Framework for Orchestrating Reliable Generative Execution",
+  "description": "Nimai — spec ops CLI and MCP server powered by the FORGE framework",
   "scripts": {
     "build": "pnpm -r run build",
     "test": "pnpm -r run test",

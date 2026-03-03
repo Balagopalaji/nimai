@@ -6,14 +6,14 @@ import { extractContext } from '../context';
 
 describe('extractContext', () => {
   it('returns empty array for empty directory', () => {
-    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'forge-test-'));
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'nimai-test-'));
     const results = extractContext(tmpDir, 'anything');
     expect(results).toHaveLength(0);
     fs.rmdirSync(tmpDir);
   });
 
   it('returns matching files for a known request', () => {
-    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'forge-test-'));
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'nimai-test-'));
     fs.writeFileSync(path.join(tmpDir, 'auth.ts'), 'export function login() {}');
     fs.writeFileSync(path.join(tmpDir, 'utils.ts'), 'export function format() {}');
 
@@ -25,7 +25,7 @@ describe('extractContext', () => {
   });
 
   it('excludes node_modules directory', () => {
-    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'forge-test-'));
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'nimai-test-'));
     fs.mkdirSync(path.join(tmpDir, 'node_modules'));
     fs.writeFileSync(path.join(tmpDir, 'node_modules', 'pkg.ts'), 'export const x = 1;');
 
@@ -37,7 +37,7 @@ describe('extractContext', () => {
   });
 
   it('respects max 20 file limit', () => {
-    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'forge-test-'));
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'nimai-test-'));
     for (let i = 0; i < 30; i++) {
       fs.writeFileSync(path.join(tmpDir, `file${i}.ts`), `export const x${i} = ${i};`);
     }
@@ -49,7 +49,7 @@ describe('extractContext', () => {
   });
 
   it('includes only allowed file extensions', () => {
-    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'forge-test-'));
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'nimai-test-'));
     fs.writeFileSync(path.join(tmpDir, 'main.ts'), 'typescript');
     fs.writeFileSync(path.join(tmpDir, 'image.png'), 'binary');
     fs.writeFileSync(path.join(tmpDir, 'notes.txt'), 'text');

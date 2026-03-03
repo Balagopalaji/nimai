@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { buildPrompt2 } from '@forge/core';
+import { buildPrompt2 } from '@nimai/core';
 
 export interface ReviewOptions {
   out?: string;

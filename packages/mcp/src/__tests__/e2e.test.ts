@@ -80,7 +80,7 @@ describe('MCP server E2E', () => {
     const initRes = await server.request(1, 'initialize', {
       protocolVersion: '2024-11-05',
       capabilities: {},
-      clientInfo: { name: 'forge-e2e-test', version: '0.0.1' },
+      clientInfo: { name: 'nimai-e2e-test', version: '0.0.1' },
     });
     expect(initRes.error).toBeUndefined();
 
@@ -95,10 +95,10 @@ describe('MCP server E2E', () => {
     expect(tools).toHaveLength(4);
 
     const names = tools.map(t => t.name);
-    expect(names).toContain('forge_spec');
-    expect(names).toContain('forge_review');
-    expect(names).toContain('forge_validate');
-    expect(names).toContain('forge_new');
+    expect(names).toContain('nimai_spec');
+    expect(names).toContain('nimai_review');
+    expect(names).toContain('nimai_validate');
+    expect(names).toContain('nimai_new');
 
     // 4. Clean shutdown
     await server.shutdown();

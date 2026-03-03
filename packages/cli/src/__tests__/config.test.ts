@@ -5,13 +5,13 @@ import * as fs from 'fs';
 import { loadConfig, resolveConfig } from '../config';
 
 function makeTmpDir(): string {
-  return fs.mkdtempSync(path.join(os.tmpdir(), 'forge-config-'));
+  return fs.mkdtempSync(path.join(os.tmpdir(), 'nimai-config-'));
 }
 
 function writeConfig(dir: string, content: string): void {
-  const forgeDir = path.join(dir, '.forge');
-  fs.mkdirSync(forgeDir, { recursive: true });
-  fs.writeFileSync(path.join(forgeDir, 'config.yaml'), content, 'utf-8');
+  const nimaiDir = path.join(dir, '.nimai');
+  fs.mkdirSync(nimaiDir, { recursive: true });
+  fs.writeFileSync(path.join(nimaiDir, 'config.yaml'), content, 'utf-8');
 }
 
 describe('loadConfig', () => {
@@ -53,7 +53,7 @@ describe('loadConfig', () => {
   it('throws on invalid adapter value', () => {
     const dir = makeTmpDir();
     writeConfig(dir, 'adapter: unknownprovider\n');
-    expect(() => loadConfig(dir)).toThrow('Invalid .forge/config.yaml');
+    expect(() => loadConfig(dir)).toThrow('Invalid .nimai/config.yaml');
     fs.rmSync(dir, { recursive: true });
   });
 });

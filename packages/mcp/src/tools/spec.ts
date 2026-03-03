@@ -1,5 +1,5 @@
 import * as path from 'path';
-import { extractContext, buildPrompt1 } from '@forge/core';
+import { extractContext, buildPrompt1 } from '@nimai/core';
 import { ForgeSpecInput, ForgeSpecOutput } from '../contract';
 import { z } from 'zod';
 

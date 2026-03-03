@@ -12,7 +12,7 @@ import { toolNew } from './tools/new';
 
 export function createServer(): Server {
   const server = new Server(
-    { name: 'forge', version: '0.1.0' },
+    { name: 'nimai', version: '0.1.0' },
     { capabilities: { tools: {} } }
   );
 
@@ -40,22 +40,22 @@ export function createServer(): Server {
       let result: unknown;
 
       switch (name) {
-        case 'forge_spec': {
+        case 'nimai_spec': {
           const input = ForgeSpecInput.parse(args);
           result = await toolSpec(input);
           break;
         }
-        case 'forge_review': {
+        case 'nimai_review': {
           const input = ForgeReviewInput.parse(args);
           result = await toolReview(input);
           break;
         }
-        case 'forge_validate': {
+        case 'nimai_validate': {
           const input = ForgeValidateInput.parse(args);
           result = await toolValidate(input);
           break;
         }
-        case 'forge_new': {
+        case 'nimai_new': {
           const input = ForgeNewInput.parse(args);
           result = await toolNew(input);
           break;

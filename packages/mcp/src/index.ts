@@ -6,7 +6,7 @@ export { createServer, startServer } from './server';
 if (require.main === module) {
   const { startServer: start } = require('./server');
   start().catch((err: Error) => {
-    console.error('FORGE MCP server failed to start:', err);
+    console.error('Nimai MCP server failed to start:', err);
     process.exit(1);
   });
 }

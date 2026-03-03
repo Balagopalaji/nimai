@@ -1,7 +1,7 @@
 /**
  * FORGE prompt builders — pure string functions, no IO, no LLM calls.
- * These live in @forge/core so any package can import them without
- * depending on @forge/mcp internals.
+ * These live in @nimai/core so any package can import them without
+ * depending on @nimai/mcp internals.
  */
 
 /**

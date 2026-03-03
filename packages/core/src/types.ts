@@ -11,7 +11,7 @@ export interface LintIssue {
   line: number;
   type: LintIssueType;
   message: string;
-  /** Advisory issues are warnings only — forge validate exits 0 unless --strict-architecture */
+  /** Advisory issues are warnings only — nimai validate exits 0 unless --strict-architecture */
   advisory?: boolean;
 }
 

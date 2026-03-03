@@ -31,7 +31,7 @@ const DEFAULTS: ResolvedConfig = {
 // ─── Loader ───────────────────────────────────────────────────────────────────
 
 export function loadConfig(cwd: string): ForgeConfig {
-  const configPath = path.join(cwd, '.forge', 'config.yaml');
+  const configPath = path.join(cwd, '.nimai', 'config.yaml');
   if (!fs.existsSync(configPath)) return {};
 
   let raw: unknown;
@@ -39,14 +39,14 @@ export function loadConfig(cwd: string): ForgeConfig {
     raw = yaml.load(fs.readFileSync(configPath, 'utf-8'));
   } catch (err) {
     throw new Error(
-      `Failed to parse .forge/config.yaml: ${(err as Error).message}`
+      `Failed to parse .nimai/config.yaml: ${(err as Error).message}`
     );
   }
 
   const result = ForgeConfigSchema.safeParse(raw ?? {});
   if (!result.success) {
     const issues = result.error.issues.map((i: z.ZodIssue) => `  ${i.path.join('.')}: ${i.message}`).join('\n');
-    throw new Error(`Invalid .forge/config.yaml:\n${issues}`);
+    throw new Error(`Invalid .nimai/config.yaml:\n${issues}`);
   }
   return result.data;
 }

@@ -1,6 +1,6 @@
 import * as path from 'path';
 import * as fs from 'fs';
-import { extractContext, buildPrompt1, lintContent } from '@forge/core';
+import { extractContext, buildPrompt1, lintContent } from '@nimai/core';
 import type { ModelAdapter } from '../adapters/types';
 import { AnthropicAdapter } from '../adapters/anthropic';
 import { AdapterError } from '../adapters/errors';
@@ -28,7 +28,7 @@ export async function runSpec(request: string, options: SpecOptions): Promise<vo
   if (options.hosted && options.validate) {
     console.error(
       'Error: --validate is only supported with --standalone.\n' +
-      'Use --standalone (and optionally --out) or run: forge validate <file>'
+      'Use --standalone (and optionally --out) or run: nimai validate <file>'
     );
     process.exit(1);
   }
@@ -148,7 +148,7 @@ function printBundle(
   prompt: string,
   context: ReturnType<typeof extractContext>
 ): void {
-  console.log('=== FORGE SPEC BUNDLE ===');
+  console.log('=== NIMAI SPEC BUNDLE ===');
   console.log('');
   console.log('--- PROMPT (paste into your AI agent) ---');
   console.log(prompt);

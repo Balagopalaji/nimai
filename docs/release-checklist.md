@@ -1,4 +1,4 @@
-# FORGE Release Checklist
+# Nimai Release Checklist
 
 Follow this checklist before publishing any package to npm.
 
@@ -7,7 +7,7 @@ Follow this checklist before publishing any package to npm.
 - [ ] Create `LICENSE` file at repo root (MIT recommended)
 - [ ] Update `repository.url` in all three `package.json` files — replace `PLACEHOLDER` with the actual GitHub org/repo
 - [ ] Ensure you are logged in to npm: `npm whoami`
-- [ ] Confirm package names are available: `npm view forge`, `npm view @forge/core`, `npm view @forge/mcp`
+- [ ] Confirm package names are available: `npm view @nimai/cli`, `npm view @nimai/core`, `npm view @nimai/mcp`
 
 ## Per-release
 
@@ -28,11 +28,11 @@ cd packages/core && npm pack --dry-run
 
 # MCP
 cd ../mcp && npm pack --dry-run
-# Expected: only dist/ files listed, forge-mcp binary included
+# Expected: only dist/ files listed, nimai-mcp binary included
 
 # CLI
 cd ../cli && npm pack --dry-run
-# Expected: only dist/ files listed, forge binary included
+# Expected: only dist/ files listed, nimai binary included
 ```
 
 ### 3. Version bump
@@ -44,7 +44,7 @@ Bump versions consistently across all packages:
 # and root package.json — update "version" field
 ```
 
-Workspace deps (`"@forge/core": "workspace:*"`) are resolved at publish time by pnpm.
+Workspace deps (`"@nimai/core": "workspace:*"`) are resolved at publish time by pnpm.
 Pin to exact version in published packages: `pnpm publish` handles this automatically
 with `--no-git-checks` or via `pnpm -r publish`.
 
@@ -57,11 +57,11 @@ Publish in dependency order:
 cd packages/core
 npm publish --access public
 
-# 2. MCP (depends on @forge/core)
+# 2. MCP (depends on @nimai/core)
 cd ../mcp
 npm publish --access public
 
-# 3. CLI (depends on @forge/core + @forge/mcp)
+# 3. CLI (depends on @nimai/core + @nimai/mcp)
 cd ../cli
 npm publish --access public
 ```
@@ -76,16 +76,16 @@ pnpm -r publish --access public
 
 ```bash
 # Install fresh in a temp dir
-mkdir /tmp/forge-smoke && cd /tmp/forge-smoke
-npm install forge @forge/mcp
+mkdir /tmp/nimai-smoke && cd /tmp/nimai-smoke
+npm install @nimai/cli @nimai/mcp
 
 # Verify CLI works
-./node_modules/.bin/forge --help
-./node_modules/.bin/forge validate --help
+./node_modules/.bin/nimai --help
+./node_modules/.bin/nimai validate --help
 
 # Verify MCP server starts and lists tools
 echo '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"smoke","version":"0.0.1"}}}' | \
-  ./node_modules/.bin/forge-mcp
+  ./node_modules/.bin/nimai-mcp
 ```
 
 ### 6. Tag the release
@@ -110,21 +110,21 @@ git push origin v0.1.0
 
 ## Deferred features (do not implement without a FORGE spec)
 
-### M3b: `forge run`
+### M3b: `nimai run`
 
-`forge run` would execute a spec end-to-end — spinning up agents, wiring
+`nimai run` would execute a spec end-to-end — spinning up agents, wiring
 Planner→Worker→Validator, managing retries and failure handling.
 
 **Why deferred:** The execution contract is a different risk class from spec/validate/review.
-Host agents (Claude Code, Codex) already do this well when given a good spec. FORGE's job
-is to make the *input* to those agents better. Shipping `forge run` prematurely risks
-duplicating what the host already does — and doing it worse.
+Host agents (Claude Code, Codex) already do this well when given a good spec. The FORGE
+methodology's job is to make the *input* to those agents better. Shipping `nimai run`
+prematurely risks duplicating what the host already does — and doing it worse.
 
 **Pre-conditions before speccing M3b:**
 - [ ] At least 2–4 weeks of v0.1.0 usage data
 - [ ] Confirmed user demand for orchestration (not just spec/validate)
 - [ ] Clear answer to: what does "done" look like for a running agent? (output contract)
-- [ ] Clear answer to: how does forge run differ from just calling `forge spec` then pasting into Claude?
+- [ ] Clear answer to: how does nimai run differ from just calling `nimai spec` then pasting into Claude?
 
 **When ready:** write a FORGE spec for M3b (dogfooding), lock the execution contract,
 then implement. Do not start coding before the spec is reviewed.

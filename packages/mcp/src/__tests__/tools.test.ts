@@ -25,16 +25,16 @@ describe('MCP contract — tool descriptors', () => {
     }
   });
 
-  it('tool names are forge_spec, forge_review, forge_validate, forge_new', () => {
+  it('tool names are nimai_spec, nimai_review, nimai_validate, nimai_new', () => {
     const names = Object.values(TOOL_DESCRIPTORS).map(d => d.name);
-    expect(names).toContain('forge_spec');
-    expect(names).toContain('forge_review');
-    expect(names).toContain('forge_validate');
-    expect(names).toContain('forge_new');
+    expect(names).toContain('nimai_spec');
+    expect(names).toContain('nimai_review');
+    expect(names).toContain('nimai_validate');
+    expect(names).toContain('nimai_new');
   });
 });
 
-describe('forge_validate tool', () => {
+describe('nimai_validate tool', () => {
   it('passes a clean spec', async () => {
     const result = await toolValidate({ specPath: VALID_SPEC });
     expect(result.passed).toBe(true);
@@ -58,7 +58,7 @@ describe('forge_validate tool', () => {
   });
 });
 
-describe('forge_spec tool', () => {
+describe('nimai_spec tool', () => {
   it('returns a prompt string and context array', async () => {
     const result = await toolSpec({ repoPath: FORGE_ROOT, request: 'add JWT auth' });
     expect(typeof result.prompt).toBe('string');
@@ -79,9 +79,9 @@ describe('forge_spec tool', () => {
   });
 });
 
-describe('forge_new tool', () => {
+describe('nimai_new tool', () => {
   it('creates a spec file from the FORGE template', async () => {
-    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'forge-new-test-'));
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'nimai-new-test-'));
     const outputPath = path.join(tmpDir, 'my-spec.md');
 
     const result = await toolNew({ outputPath });
@@ -94,7 +94,7 @@ describe('forge_new tool', () => {
   });
 
   it('creates parent directories if they do not exist', async () => {
-    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'forge-new-test-'));
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'nimai-new-test-'));
     const outputPath = path.join(tmpDir, 'nested', 'dir', 'spec.md');
 
     await toolNew({ outputPath });
@@ -104,7 +104,7 @@ describe('forge_new tool', () => {
   });
 });
 
-describe('forge_review tool', () => {
+describe('nimai_review tool', () => {
   it('returns a reviewer prompt string', async () => {
     const result = await toolReview({ specPath: VALID_SPEC });
     expect(typeof result.reviewerPrompt).toBe('string');

@@ -5,16 +5,16 @@
  * Do NOT change tool names or output shapes without a contract version bump.
  *
  * Adversarial review notes (stress-tested before locking):
- * - Tool names prefixed with "forge_" to avoid collisions with host tool namespaces
+ * - Tool names prefixed with "nimai_" to avoid collisions with host tool namespaces
  * - All inputs validated with zod to prevent runtime shape errors
  * - Outputs are plain serialisable objects (no class instances, no Buffers)
  * - No LLM calls inside any tool — tools return context/structure only
  * - specPath / repoPath are absolute or relative to cwd; server does NOT resolve ~
- * - outputPath for forge_new: parent directory is created if missing; write errors surface as tool errors
+ * - outputPath for nimai_new: parent directory is created if missing; write errors surface as tool errors
  */
 
 import { z } from 'zod';
-import type { LintIssue, ContextItem } from '@forge/core';
+import type { LintIssue, ContextItem } from '@nimai/core';
 
 // ─── Input Schemas ────────────────────────────────────────────────────────────
 
@@ -65,29 +65,29 @@ export interface ForgeNewOutput {
 // ─── Tool Descriptors (used to register tools in the MCP server) ──────────────
 
 export const TOOL_DESCRIPTORS = {
-  forge_spec: {
-    name: 'forge_spec',
+  nimai_spec: {
+    name: 'nimai_spec',
     description:
       'Returns a populated FORGE Self-Spec Agent prompt (Prompt 1) plus extracted repo context. ' +
       'The host model uses this bundle to generate a draft spec — no LLM call is made inside this tool.',
     inputSchema: ForgeSpecInput,
   },
-  forge_review: {
-    name: 'forge_review',
+  nimai_review: {
+    name: 'nimai_review',
     description:
       'Returns a populated FORGE Reviewer/Validator prompt (Prompt 2) derived from an approved spec file. ' +
       'The host model uses this to validate agent output against the spec.',
     inputSchema: ForgeReviewInput,
   },
-  forge_validate: {
-    name: 'forge_validate',
+  nimai_validate: {
+    name: 'nimai_validate',
     description:
       'Lints a spec file for unresolved placeholder fields (___), [NEEDS HUMAN INPUT] flags, ' +
       'and missing required sections. Returns structured issues and a pass/fail result.',
     inputSchema: ForgeValidateInput,
   },
-  forge_new: {
-    name: 'forge_new',
+  nimai_new: {
+    name: 'nimai_new',
     description:
       'Scaffolds a new FORGE spec file from the canonical template at the specified output path.',
     inputSchema: ForgeNewInput,
