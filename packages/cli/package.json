@@ -1,0 +1,27 @@
+{
+  "name": "forge",
+  "version": "0.1.0",
+  "description": "FORGE CLI — spec ops for AI work",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "forge": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.4.5",
+    "vitest": "^1.6.0"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.78.0",
+    "@forge/core": "workspace:*",
+    "@forge/mcp": "workspace:*",
+    "commander": "^12.1.0"
+  }
+}

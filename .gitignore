@@ -1,0 +1,22 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+packages/*/dist/
+
+# Test/coverage artifacts
+coverage/
+.vitest/
+
+# Logs
+*.log
+
+# OS/editor noise
+.DS_Store
+.claude/
+
+# Env/config secrets
+.env
+.env.*
+!.env.example
