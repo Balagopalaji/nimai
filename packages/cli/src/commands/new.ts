@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { loadTemplate } from '@nimai/core';
-import { FORGE_ROOT } from '@nimai/mcp';
+import { loadTemplate } from 'nimai-core';
+import { FORGE_ROOT } from 'nimai-mcp';
 
 export interface NewOptions {
   force: boolean;

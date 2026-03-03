@@ -7,7 +7,7 @@ Follow this checklist before publishing any package to npm.
 - [ ] Create `LICENSE` file at repo root (MIT recommended)
 - [ ] Update `repository.url` in all three `package.json` files — replace `PLACEHOLDER` with the actual GitHub org/repo
 - [ ] Ensure you are logged in to npm: `npm whoami`
-- [ ] Confirm package names are available: `npm view @nimai/cli`, `npm view @nimai/core`, `npm view @nimai/mcp`
+- [ ] Confirm package names are available: `npm view nimai`, `npm view nimai-core`, `npm view nimai-mcp`
 
 ## Per-release
 
@@ -44,7 +44,7 @@ Bump versions consistently across all packages:
 # and root package.json — update "version" field
 ```
 
-Workspace deps (`"@nimai/core": "workspace:*"`) are resolved at publish time by pnpm.
+Workspace deps (`"nimai-core": "workspace:*"`) are resolved at publish time by pnpm.
 Pin to exact version in published packages: `pnpm publish` handles this automatically
 with `--no-git-checks` or via `pnpm -r publish`.
 
@@ -57,11 +57,11 @@ Publish in dependency order:
 cd packages/core
 npm publish --access public
 
-# 2. MCP (depends on @nimai/core)
+# 2. MCP (depends on nimai-core)
 cd ../mcp
 npm publish --access public
 
-# 3. CLI (depends on @nimai/core + @nimai/mcp)
+# 3. CLI (depends on nimai-core + nimai-mcp)
 cd ../cli
 npm publish --access public
 ```
@@ -77,7 +77,7 @@ pnpm -r publish --access public
 ```bash
 # Install fresh in a temp dir
 mkdir /tmp/nimai-smoke && cd /tmp/nimai-smoke
-npm install @nimai/cli @nimai/mcp
+npm install nimai nimai-mcp
 
 # Verify CLI works
 ./node_modules/.bin/nimai --help

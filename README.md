@@ -28,13 +28,13 @@ The five primitives every agent-ready task must satisfy:
 ## Install
 
 ```bash
-npm install -g @nimai/cli
+npm install -g nimai
 ```
 
 Or add the MCP server to your AI host (Claude Code, Codex, Cursor):
 
 ```bash
-npm install -g @nimai/mcp
+npm install -g nimai-mcp
 ```
 
 ---
@@ -109,9 +109,9 @@ model: claude-sonnet-4-6
 
 | Package | Description |
 |---------|-------------|
-| [`@nimai/core`](packages/core) | Template loader, lint engine, context extractor — no LLM deps |
-| [`@nimai/mcp`](packages/mcp) | MCP server |
-| [`@nimai/cli`](packages/cli) | CLI binary |
+| [`nimai-core`](packages/core) | Template loader, lint engine, context extractor — no LLM deps |
+| [`nimai-mcp`](packages/mcp) | MCP server |
+| [`nimai`](packages/cli) | CLI binary |
 
 ---
 

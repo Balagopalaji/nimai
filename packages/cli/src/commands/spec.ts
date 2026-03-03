@@ -1,6 +1,6 @@
 import * as path from 'path';
 import * as fs from 'fs';
-import { extractContext, buildPrompt1, lintContent } from '@nimai/core';
+import { extractContext, buildPrompt1, lintContent } from 'nimai-core';
 import type { ModelAdapter } from '../adapters/types';
 import { AnthropicAdapter } from '../adapters/anthropic';
 import { AdapterError } from '../adapters/errors';

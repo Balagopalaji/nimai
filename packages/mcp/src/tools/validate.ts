@@ -1,4 +1,4 @@
-import { lintSpec } from '@nimai/core';
+import { lintSpec } from 'nimai-core';
 import { ForgeValidateInput, ForgeValidateOutput } from '../contract';
 import { z } from 'zod';
 

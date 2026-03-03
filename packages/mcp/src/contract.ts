@@ -14,7 +14,7 @@
  */
 
 import { z } from 'zod';
-import type { LintIssue, ContextItem } from '@nimai/core';
+import type { LintIssue, ContextItem } from 'nimai-core';
 
 // ─── Input Schemas ────────────────────────────────────────────────────────────
 

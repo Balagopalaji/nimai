@@ -1,4 +1,4 @@
-import { lintSpec, LintIssue } from '@nimai/core';
+import { lintSpec, LintIssue } from 'nimai-core';
 
 export interface ValidateOptions {
   strictArchitecture?: boolean;

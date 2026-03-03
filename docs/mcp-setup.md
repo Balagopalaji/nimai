@@ -18,7 +18,7 @@ does all generation. The tools return structured context and prompts.
 
 ```bash
 # Install the MCP server globally
-npm install -g @nimai/mcp
+npm install -g nimai-mcp
 
 # Or run from the monorepo (development)
 pnpm build
@@ -31,7 +31,7 @@ pnpm build
 Add the server to your Claude Code MCP configuration:
 
 ```bash
-claude mcp add nimai-mcp -- node /path/to/node_modules/@nimai/mcp/dist/index.js
+claude mcp add nimai-mcp -- node /path/to/node_modules/nimai-mcp/dist/index.js
 ```
 
 Or edit `~/.claude/mcp-servers.json` directly:
@@ -40,7 +40,7 @@ Or edit `~/.claude/mcp-servers.json` directly:
 {
   "nimai-mcp": {
     "command": "node",
-    "args": ["/path/to/node_modules/@nimai/mcp/dist/index.js"]
+    "args": ["/path/to/node_modules/nimai-mcp/dist/index.js"]
   }
 }
 ```
@@ -77,7 +77,7 @@ Add to `~/.gemini/settings.json` (global) or `.gemini/settings.json` (project-le
   "mcpServers": {
     "nimai-mcp": {
       "command": "node",
-      "args": ["/path/to/node_modules/@nimai/mcp/dist/index.js"]
+      "args": ["/path/to/node_modules/nimai-mcp/dist/index.js"]
     }
   }
 }
@@ -100,7 +100,7 @@ Add to your OpenCode config file (`~/.config/opencode/config.json` or project-le
   "mcp": {
     "nimai-mcp": {
       "command": "node",
-      "args": ["/path/to/node_modules/@nimai/mcp/dist/index.js"]
+      "args": ["/path/to/node_modules/nimai-mcp/dist/index.js"]
     }
   }
 }
@@ -124,7 +124,7 @@ wherever your Codex config lives):
   "mcpServers": {
     "nimai-mcp": {
       "command": "node",
-      "args": ["/path/to/node_modules/@nimai/mcp/dist/index.js"]
+      "args": ["/path/to/node_modules/nimai-mcp/dist/index.js"]
     }
   }
 }
@@ -138,7 +138,7 @@ Open Cursor settings and navigate to **Features → MCP**. Add a new server:
 
 - **Name:** `nimai-mcp`
 - **Command:** `node`
-- **Args:** `/path/to/node_modules/@nimai/mcp/dist/index.js`
+- **Args:** `/path/to/node_modules/nimai-mcp/dist/index.js`
 
 Or edit `.cursor/mcp.json` in your project root:
 
@@ -147,7 +147,7 @@ Or edit `.cursor/mcp.json` in your project root:
   "mcpServers": {
     "nimai-mcp": {
       "command": "node",
-      "args": ["/path/to/node_modules/@nimai/mcp/dist/index.js"]
+      "args": ["/path/to/node_modules/nimai-mcp/dist/index.js"]
     }
   }
 }
@@ -177,13 +177,13 @@ Test that the server lists all 4 tools correctly:
 ```bash
 # Start the server and send a tools/list request via stdin
 echo '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test","version":"0.0.1"}}}' | \
-  node /path/to/node_modules/@nimai/mcp/dist/index.js
+  node /path/to/node_modules/nimai-mcp/dist/index.js
 ```
 
 Or run the automated E2E test from the monorepo:
 
 ```bash
-pnpm --filter @nimai/mcp test
+pnpm --filter nimai-mcp test
 ```
 
 Expected: 4 tools listed (`nimai_spec`, `nimai_review`, `nimai_validate`, `nimai_new`).

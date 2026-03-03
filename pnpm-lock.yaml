@@ -20,18 +20,18 @@ importers:
       '@anthropic-ai/sdk':
         specifier: ^0.78.0
         version: 0.78.0(zod@3.25.76)
-      '@nimai/core':
-        specifier: workspace:*
-        version: link:../core
-      '@nimai/mcp':
-        specifier: workspace:*
-        version: link:../mcp
       commander:
         specifier: ^12.1.0
         version: 12.1.0
       js-yaml:
         specifier: ^4.1.1
         version: 4.1.1
+      nimai-core:
+        specifier: workspace:*
+        version: link:../core
+      nimai-mcp:
+        specifier: workspace:*
+        version: link:../mcp
       zod:
         specifier: ^3.25.76
         version: 3.25.76
@@ -70,7 +70,7 @@ importers:
       '@modelcontextprotocol/sdk':
         specifier: ^1.0.0
         version: 1.27.1(zod@3.25.76)
-      '@nimai/core':
+      nimai-core:
         specifier: workspace:*
         version: link:../core
       zod:
