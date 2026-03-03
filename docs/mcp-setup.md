@@ -68,6 +68,52 @@ If working from the monorepo:
 
 ---
 
+## Gemini CLI
+
+Add to `~/.gemini/settings.json` (global) or `.gemini/settings.json` (project-level):
+
+```json
+{
+  "mcpServers": {
+    "nimai-mcp": {
+      "command": "node",
+      "args": ["/path/to/node_modules/@nimai/mcp/dist/index.js"]
+    }
+  }
+}
+```
+
+Or use the CLI to add it interactively:
+
+```bash
+gemini mcp add
+```
+
+---
+
+## OpenCode
+
+Add to your OpenCode config file (`~/.config/opencode/config.json` or project-level `opencode.json`):
+
+```json
+{
+  "mcp": {
+    "nimai-mcp": {
+      "command": "node",
+      "args": ["/path/to/node_modules/@nimai/mcp/dist/index.js"]
+    }
+  }
+}
+```
+
+Or use the CLI:
+
+```bash
+opencode mcp add
+```
+
+---
+
 ## Codex (OpenAI)
 
 Add to your Codex MCP server configuration. In `~/.codex/config.json` (or
