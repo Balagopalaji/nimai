@@ -9,7 +9,7 @@ const program = new Command();
 
 program
   .name('forge')
-  .description('FORGE — spec ops CLI for AI work')
+  .description('FORGE — spec ops CLI for AI work\n\nCommands: spec, validate, review, new\nPlanned (M3b): forge run — execute a spec end-to-end (deferred pending usage data)')
   .version('0.1.0');
 
 program

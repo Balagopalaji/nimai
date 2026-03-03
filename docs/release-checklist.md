@@ -107,3 +107,29 @@ git push origin v0.1.0
 > Note: MCP tool contract is **locked at v1**. Any change to tool names or
 > input/output shapes is a breaking change requiring a major version bump and
 > consultation with users before proceeding.
+
+## Deferred features (do not implement without a FORGE spec)
+
+### M3b: `forge run`
+
+`forge run` would execute a spec end-to-end — spinning up agents, wiring
+Planner→Worker→Validator, managing retries and failure handling.
+
+**Why deferred:** The execution contract is a different risk class from spec/validate/review.
+Host agents (Claude Code, Codex) already do this well when given a good spec. FORGE's job
+is to make the *input* to those agents better. Shipping `forge run` prematurely risks
+duplicating what the host already does — and doing it worse.
+
+**Pre-conditions before speccing M3b:**
+- [ ] At least 2–4 weeks of v0.1.0 usage data
+- [ ] Confirmed user demand for orchestration (not just spec/validate)
+- [ ] Clear answer to: what does "done" look like for a running agent? (output contract)
+- [ ] Clear answer to: how does forge run differ from just calling `forge spec` then pasting into Claude?
+
+**When ready:** write a FORGE spec for M3b (dogfooding), lock the execution contract,
+then implement. Do not start coding before the spec is reviewed.
+
+**To reload the Codex agent that has full context for this project:**
+```
+codex resume 019cb163-b42e-7d82-a20a-8eed9da6456f
+```
