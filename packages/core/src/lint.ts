@@ -15,6 +15,31 @@ const REQUIRED_SECTIONS = [
   'governance & validation',
 ];
 
+// Advisory: architecture quality signals (anti-spaghetti rules)
+// Each rule looks for at least one keyword/heading indicating the concept is addressed
+const ADVISORY_RULES: { type: import('./types').LintIssueType; keywords: string[]; message: string }[] = [
+  {
+    type: 'missing_module_boundary',
+    keywords: ['module boundary', 'package boundary', 'layer boundary', 'separation of concerns', 'packages/core', 'packages/mcp', 'packages/cli'],
+    message: 'No module boundary definition found — consider documenting package/layer boundaries',
+  },
+  {
+    type: 'missing_interface_contract',
+    keywords: ['interface contract', 'api contract', 'tool schema', 'modeladapter', 'input schema', 'output shape', 'zod'],
+    message: 'No interface contract found — consider documenting API/tool schemas or interfaces',
+  },
+  {
+    type: 'missing_non_goals',
+    keywords: ['non-goal', 'non-goals', 'must-not', 'scope — out', 'out of scope', 'deferred', 'excluded'],
+    message: 'No non-goals or out-of-scope section found — consider documenting what this spec explicitly excludes',
+  },
+  {
+    type: 'missing_change_surface',
+    keywords: ['change surface', 'breaking change', 'migration', 'backward compat', 'semver', 'versioning', 'deprecat'],
+    message: 'No change surface documentation found — consider documenting compatibility expectations',
+  },
+];
+
 export function lintSpec(filePath: string): LintIssue[] {
   let content: string;
   try {
@@ -48,9 +73,20 @@ export function lintContent(content: string): LintIssue[] {
     }
   }
 
+  for (const rule of ADVISORY_RULES) {
+    const found = rule.keywords.some(kw => lower.includes(kw.toLowerCase()));
+    if (!found) {
+      issues.push(advisoryIssue(0, rule.type, rule.message));
+    }
+  }
+
   return issues;
 }
 
 function issue(line: number, type: LintIssueType, message: string): LintIssue {
   return { line, type, message };
+}
+
+function advisoryIssue(line: number, type: LintIssueType, message: string): LintIssue {
+  return { line, type, message, advisory: true };
 }

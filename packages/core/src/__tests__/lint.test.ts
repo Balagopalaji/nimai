@@ -61,7 +61,39 @@ describe('lintContent', () => {
     expect(missing.length).toBeGreaterThan(0);
   });
 
-  it('returns empty array for fully clean content', () => {
+  it('all advisory issues have advisory=true', () => {
+    const issues = lintContent('## Random Section\nsome content');
+    const advisory = issues.filter(i => i.advisory);
+    expect(advisory.length).toBeGreaterThan(0);
+    advisory.forEach(i => expect(i.advisory).toBe(true));
+  });
+
+  it('missing_module_boundary detected when no module keywords present', () => {
+    const issues = lintContent('some plain content with no architecture terms');
+    expect(issues.some(i => i.type === 'missing_module_boundary')).toBe(true);
+  });
+
+  it('missing_module_boundary NOT raised when module boundary mentioned', () => {
+    const issues = lintContent('module boundary: packages/core handles logic');
+    expect(issues.some(i => i.type === 'missing_module_boundary')).toBe(false);
+  });
+
+  it('missing_interface_contract NOT raised when zod mentioned', () => {
+    const issues = lintContent('zod schema for input validation');
+    expect(issues.some(i => i.type === 'missing_interface_contract')).toBe(false);
+  });
+
+  it('missing_non_goals NOT raised when non-goals section present', () => {
+    const issues = lintContent('## Non-Goals\nno web UI');
+    expect(issues.some(i => i.type === 'missing_non_goals')).toBe(false);
+  });
+
+  it('missing_change_surface NOT raised when semver mentioned', () => {
+    const issues = lintContent('semver versioning applies');
+    expect(issues.some(i => i.type === 'missing_change_surface')).toBe(false);
+  });
+
+  it('returns no hard issues for content with all required sections', () => {
     const content = [
       '## Pre-Flight',
       '## Specification Layer',
@@ -71,6 +103,7 @@ describe('lintContent', () => {
       '## Governance & Validation',
     ].join('\n');
     const issues = lintContent(content);
-    expect(issues).toHaveLength(0);
+    const hard = issues.filter(i => !i.advisory);
+    expect(hard).toHaveLength(0);
   });
 });

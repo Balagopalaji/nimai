@@ -1,7 +1,15 @@
 {
   "name": "@forge/mcp",
   "version": "0.1.0",
-  "description": "FORGE MCP server — tool-only, no internal LLM calls",
+  "description": "FORGE MCP server — exposes forge_spec, forge_review, forge_validate, forge_new as tools. No internal LLM calls.",
+  "keywords": ["forge", "mcp", "model-context-protocol", "ai", "llm", "specification", "claude", "codex"],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/PLACEHOLDER/forge.git",
+    "directory": "packages/mcp"
+  },
+  "files": ["dist/"],
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {

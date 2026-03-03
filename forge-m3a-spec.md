@@ -76,7 +76,7 @@ Milestone 3a is complete when ALL of the following are true:
 - [ ] `pnpm build` zero TS errors
 - [ ] `pnpm test` passes all tests (66 existing + new M3a tests)
 - [ ] `.forge/config.yaml` with `model: claude-opus-4-6` is respected by `forge spec --standalone` when no `--model` flag
-- [ ] `ANTHROPIC_API_KEY` env still overrides config adapter key
+- [ ] `ANTHROPIC_API_KEY` env provides credentials; config selects adapter/model/URLs only (no API keys in config file)
 - [ ] `OpenAIAdapter` and `OllamaAdapter` unit tests pass (mocked)
 - [ ] `forge validate` reports anti-spaghetti advisory warnings but exits 0
 - [ ] Subprocess E2E test starts MCP server and asserts `tools/list` returns 4 tools
@@ -136,27 +136,30 @@ Known state: 66 tests passing, all M1 + M2 acceptance criteria met.
 
 ---
 
-## 4. [NEEDS HUMAN INPUT] Flags
+## 4. Policy Decisions (Resolved)
 
-- **NHFI-1 — Config schema keys for M3a:** Proposed minimal schema:
+Policy: **minimal config, advisory first, validate adapter diversity, publish by stability.**
+
+- **NHFI-1 RESOLVED — Config schema:** Minimal M3a schema:
   ```yaml
+  adapter: anthropic            # anthropic | openai | ollama
   model: claude-sonnet-4-6      # default model for --standalone
-  adapter: anthropic            # adapter: anthropic | openai | ollama
   ollamaUrl: http://localhost:11434
+  openaiBaseUrl: https://api.openai.com/v1   # optional; override for OpenAI-compatible APIs (e.g. z.ai)
   ```
-  Is this sufficient for M3a, or are there other keys needed?
-  *Recommendation: keep to these three. Everything else is M4.*
+  `openaiBaseUrl` added since OpenAI adapter is in M3a. Enables any OpenAI-compatible provider (z.ai, etc.) with zero extra code. Everything else deferred to M4.
 
-- **NHFI-2 — Anti-spaghetti rule severity:** Advisory (exit 0, labeled `[advisory]`) in M3a,
-  hard failures in M3b/M4. Is that the right graduation path?
-  *Recommendation: yes — advisory first, graduate after the rules are battle-tested.*
+- **NHFI-2 RESOLVED — Anti-spaghetti severity:** Advisory in M3a (exit 0, issues labeled `[advisory]`). Add `--strict-architecture` flag to opt into exit 1 now. Promote to default hard-fail in M4 after real usage.
 
-- **NHFI-3 — Ollama in M3a or M3b?** Ollama has a different API shape (local REST, no key).
-  It's lower risk than OpenAI but needs a fetch-based implementation rather than an SDK.
-  *Recommendation: include in M3a — it's simple (one fetch call) and validates the adapter pattern fully.*
+- **NHFI-3 RESOLVED — Ollama in M3a:** Yes. Validates adapter pattern works beyond API-key SDK flows. Implementation is one `fetch` call — no SDK needed.
 
-- **NHFI-4 — npm publish scope:** Publish `forge` (CLI) only, or also `@forge/core` and `@forge/mcp`?
-  *Recommendation: publish all three — core and mcp are useful independently (MCP server can be used without CLI).*
+- **NHFI-4 RESOLVED — npm publish scope:** Publish all three if package boundaries are stable. If not, publish `forge` CLI first and mark `@forge/core` + `@forge/mcp` as prerelease `0.1.0-beta.1`. Assess stability before promoting.
+
+**Additional M3a design decision (from z.ai + hosted-auth discussion):**
+
+- **--hosted mode IS the "use your CLI provider's auth" pattern.** No integration work needed. When `forge spec --hosted` runs inside Claude Code or Codex, the host model executes the prompt bundle using its own auth. Document this explicitly in `docs/mcp-setup.md`.
+- **z.ai and OpenAI-compatible APIs:** handled via `openaiBaseUrl` in config — no separate adapter.
+- **Complexity routing** (`low/high -> adapter/model`): M4 scope. New design surface, defer.
 
 ---
 
@@ -179,33 +182,34 @@ the new lint rules must not produce false positives on existing valid specs.
 loadConfig(cwd: string): ForgeConfig
   → look for <cwd>/.forge/config.yaml
   → if missing, return defaults
-  → parse YAML, validate against schema (zod)
+  → parse YAML, validate against zod schema
   → return typed ForgeConfig
 
 mergeConfig(config, env, flags): ResolvedConfig
-  → precedence: flags > env > config > defaults
+  → precedence: CLI flags > env vars (ANTHROPIC_API_KEY etc) > .forge/config.yaml > hardcoded defaults
 ```
 
 ### Adapter selection from config
 ```
-adapter: anthropic  → AnthropicAdapter(apiKey from env or config)
-adapter: openai     → OpenAIAdapter(apiKey from OPENAI_API_KEY env)
-adapter: ollama     → OllamaAdapter(url from config.ollamaUrl or default)
+adapter: anthropic  → AnthropicAdapter(apiKey: ANTHROPIC_API_KEY env)
+adapter: openai     → OpenAIAdapter(apiKey: OPENAI_API_KEY env, baseUrl: config.openaiBaseUrl)
+                      also works for z.ai / any OpenAI-compatible API via openaiBaseUrl override
+adapter: ollama     → OllamaAdapter(url: config.ollamaUrl || 'http://localhost:11434')
 ```
 
 ### Anti-spaghetti lint rule targets
-Four new advisory `LintIssueType` values:
+Four new advisory `LintIssueType` values — all labeled `[advisory]`, never cause exit 1 unless `--strict-architecture`:
 - `missing_module_boundary` — spec doesn't state which packages/modules it touches
 - `missing_interface_contract` — spec doesn't define the interface/contract being implemented
 - `missing_non_goals` — spec has no explicit out-of-scope / Must-Not section
-- `missing_change_surface` — no per-task scope boundary (affects all tasks, not just one)
+- `missing_change_surface` — no per-task scope boundary
 
 Detection: heading/keyword presence scan (same pattern as existing required-section checks).
-All produce `advisory: true` flag on the LintIssue — forge validate exits 0.
+`--strict-architecture` flag on `forge validate` opts into exit 1 for advisory issues.
 
 ### E2E test design
 ```
-packages/cli/src/__tests__/e2e.test.ts
+packages/mcp/src/__tests__/e2e.test.ts   ← MCP owns this (testing server protocol, not CLI)
   spawn packages/mcp/dist/index.js as child process
   write JSON-RPC initialize + tools/list to stdin
   assert stdout contains forge_spec, forge_review, forge_validate, forge_new
@@ -226,4 +230,4 @@ packages/cli/src/__tests__/e2e.test.ts
 
 ---
 
-*FORGE M3a Spec v1.0 — ready for execution after NHFI flags resolved.*
+*FORGE M3a Spec v1.0 — ready for execution.*

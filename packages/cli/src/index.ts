@@ -4,7 +4,6 @@ import { runSpec } from './commands/spec';
 import { runValidate } from './commands/validate';
 import { runReview } from './commands/review';
 import { runNew } from './commands/new';
-import { DEFAULT_MODEL } from './adapters/anthropic';
 
 const program = new Command();
 
@@ -22,7 +21,7 @@ program
   .option('--out <file>', 'Write output to file instead of stdout')
   .option('--validate', 'Run lint on the generated spec after --standalone generation (not valid with --hosted)')
   .option('--allow-invalid', 'Exit 0 even when --validate finds issues (requires --validate)')
-  .option('--model <id>', 'Model ID for --standalone mode', DEFAULT_MODEL)
+  .option('--model <id>', 'Model ID for --standalone mode (overrides .forge/config.yaml)')
   .action((request: string, options: {
     hosted?: boolean;
     standalone?: boolean;
@@ -49,8 +48,9 @@ program
 program
   .command('validate <specPath>')
   .description('Lint a spec file for unresolved fields, NHFI flags, and missing sections')
-  .action((specPath: string) => {
-    runValidate(specPath);
+  .option('--strict-architecture', 'Treat advisory architecture warnings as errors (exits 1)')
+  .action((specPath: string, options: { strictArchitecture?: boolean }) => {
+    runValidate(specPath, { strictArchitecture: !!options.strictArchitecture });
   });
 
 program

@@ -1,6 +1,10 @@
 import { lintSpec, LintIssue } from '@forge/core';
 
-export function runValidate(specPath: string): void {
+export interface ValidateOptions {
+  strictArchitecture?: boolean;
+}
+
+export function runValidate(specPath: string, options: ValidateOptions = {}): void {
   let issues: LintIssue[];
   try {
     issues = lintSpec(specPath);
@@ -9,34 +13,47 @@ export function runValidate(specPath: string): void {
     process.exit(1);
   }
 
-  if (issues.length === 0) {
+  const hard = issues.filter(i => !i.advisory);
+  const advisory = issues.filter(i => i.advisory);
+
+  if (hard.length === 0 && advisory.length === 0) {
     console.log('✓ Spec passed — no issues found.');
     return;
   }
 
-  const blanks = issues.filter(i => i.type === 'blank_field');
-  const nhfi = issues.filter(i => i.type === 'needs_human_input');
-  const missing = issues.filter(i => i.type === 'missing_section');
+  const blanks = hard.filter(i => i.type === 'blank_field');
+  const nhfi = hard.filter(i => i.type === 'needs_human_input');
+  const missing = hard.filter(i => i.type === 'missing_section');
 
-  console.log(`forge validate: ${issues.length} issue(s) found\n`);
+  if (hard.length > 0) {
+    console.log(`forge validate: ${hard.length} issue(s) found\n`);
 
-  if (blanks.length > 0) {
-    console.log(`Blank fields (${blanks.length}):`);
-    blanks.forEach(i => console.log(`  Line ${i.line}: ${i.message}`));
+    if (blanks.length > 0) {
+      console.log(`Blank fields (${blanks.length}):`);
+      blanks.forEach(i => console.log(`  Line ${i.line}: ${i.message}`));
+      console.log('');
+    }
+
+    if (nhfi.length > 0) {
+      console.log(`[NEEDS HUMAN INPUT] flags (${nhfi.length}):`);
+      nhfi.forEach(i => console.log(`  Line ${i.line}: ${i.message}`));
+      console.log('');
+    }
+
+    if (missing.length > 0) {
+      console.log(`Missing required sections (${missing.length}):`);
+      missing.forEach(i => console.log(`  ${i.message}`));
+      console.log('');
+    }
+  }
+
+  if (advisory.length > 0) {
+    console.log(`Advisory warnings (${advisory.length})${options.strictArchitecture ? ' [--strict-architecture: treated as errors]' : ''}:`);
+    advisory.forEach(i => console.log(`  warn: ${i.message}`));
     console.log('');
   }
 
-  if (nhfi.length > 0) {
-    console.log(`[NEEDS HUMAN INPUT] flags (${nhfi.length}):`);
-    nhfi.forEach(i => console.log(`  Line ${i.line}: ${i.message}`));
-    console.log('');
+  if (hard.length > 0 || options.strictArchitecture) {
+    process.exit(1);
   }
-
-  if (missing.length > 0) {
-    console.log(`Missing required sections (${missing.length}):`);
-    missing.forEach(i => console.log(`  ${i.message}`));
-    console.log('');
-  }
-
-  process.exit(1);
 }

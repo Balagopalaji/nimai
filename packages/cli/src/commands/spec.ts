@@ -2,8 +2,9 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { extractContext, buildPrompt1, lintContent } from '@forge/core';
 import type { ModelAdapter } from '../adapters/types';
-import { AnthropicAdapter, DEFAULT_MODEL } from '../adapters/anthropic';
+import { AnthropicAdapter } from '../adapters/anthropic';
 import { AdapterError } from '../adapters/errors';
+import { loadConfig, resolveConfig } from '../config';
 
 export interface SpecOptions {
   hosted: boolean;
@@ -12,8 +13,8 @@ export interface SpecOptions {
   out?: string;
   validate: boolean;
   allowInvalid: boolean;
-  model: string;
-  /** Optional adapter for testing — if provided, skips AnthropicAdapter construction */
+  model?: string;
+  /** Optional adapter for testing — if provided, skips adapter construction */
   adapter?: ModelAdapter;
 }
 
@@ -54,20 +55,15 @@ export async function runSpec(request: string, options: SpecOptions): Promise<vo
     return;
   }
 
-  // ── --standalone: call the model ─────────────────────────────────────────────
+  // ── --standalone: resolve config then build adapter ──────────────────────────
   let adapter: ModelAdapter;
   if (options.adapter) {
     adapter = options.adapter;
   } else {
-    const apiKey = process.env['ANTHROPIC_API_KEY'];
-    if (!apiKey) {
-      console.error(
-        'Error: ANTHROPIC_API_KEY environment variable is not set.\n' +
-        'Set it and retry, or use --hosted to generate a prompt bundle without an API key.'
-      );
-      process.exit(1);
-    }
-    adapter = new AnthropicAdapter(apiKey, options.model);
+    const fileConfig = loadConfig(process.cwd());
+    const config = resolveConfig(fileConfig, { model: options.model });
+    adapter = buildAdapter(config.adapter, config.model, config);
+    if (!adapter) process.exit(1); // buildAdapter prints error and returns null on failure
   }
 
   let specContent: string;
@@ -92,18 +88,60 @@ export async function runSpec(request: string, options: SpecOptions): Promise<vo
   // ── --validate ────────────────────────────────────────────────────────────────
   if (options.validate) {
     const issues = lintContent(specContent);
-    if (issues.length === 0) {
+    const hard = issues.filter(i => !i.advisory);
+    const advisory = issues.filter(i => i.advisory);
+
+    if (hard.length === 0 && advisory.length === 0) {
       console.error('✓ Validation passed — no issues found.');
     } else {
-      console.error(`\nValidation: ${issues.length} issue(s) found`);
-      issues.forEach(i =>
-        console.error(`  ${i.type === 'missing_section' ? '' : `Line ${i.line}: `}${i.message}`)
-      );
-      if (!options.allowInvalid) {
+      if (hard.length > 0) {
+        console.error(`\nValidation: ${hard.length} issue(s) found`);
+        hard.forEach(i =>
+          console.error(`  ${i.type === 'missing_section' ? '' : `Line ${i.line}: `}${i.message}`)
+        );
+      }
+      if (advisory.length > 0) {
+        console.error(`\nAdvisory warnings: ${advisory.length}`);
+        advisory.forEach(i => console.error(`  warn: ${i.message}`));
+      }
+      if (hard.length > 0 && !options.allowInvalid) {
         process.exit(1);
       }
     }
   }
+}
+
+function buildAdapter(
+  adapterName: string,
+  model: string,
+  config: import('../config').ResolvedConfig
+): ModelAdapter {
+  if (adapterName === 'anthropic') {
+    const apiKey = process.env['ANTHROPIC_API_KEY'];
+    if (!apiKey) {
+      console.error(
+        'Error: ANTHROPIC_API_KEY environment variable is not set.\n' +
+        'Set it and retry, or use --hosted to generate a prompt bundle without an API key.'
+      );
+      process.exit(1);
+    }
+    return new AnthropicAdapter(apiKey, model);
+  }
+  if (adapterName === 'openai') {
+    const { OpenAIAdapter } = require('../adapters/openai') as typeof import('../adapters/openai');
+    const apiKey = process.env['OPENAI_API_KEY'];
+    if (!apiKey) {
+      console.error('Error: OPENAI_API_KEY environment variable is not set.');
+      process.exit(1);
+    }
+    return new OpenAIAdapter(apiKey, model, config.openaiBaseUrl);
+  }
+  if (adapterName === 'ollama') {
+    const { OllamaAdapter } = require('../adapters/ollama') as typeof import('../adapters/ollama');
+    return new OllamaAdapter(config.ollamaUrl, model);
+  }
+  console.error(`Error: Unknown adapter "${adapterName}". Valid values: anthropic, openai, ollama`);
+  process.exit(1);
 }
 
 function printBundle(

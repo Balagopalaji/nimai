@@ -10,13 +10,21 @@ Risk tier: Low
 
 Deliverable: A working CLI tool.
 
+Module boundary: packages/core handles pure logic; packages/cli handles I/O.
+
+Non-goals: No web UI, no multi-user support.
+
 ## Intent Layer
 
 Agent purpose: Build and validate specs.
 
+Interface contract: ModelAdapter interface defines generate(prompt): Promise<string>.
+
 ## Context Layer
 
 Sources: FORGE docs.
+
+Change surface: semver versioning; no breaking changes in patch releases.
 
 ## Prompt Layer
 
