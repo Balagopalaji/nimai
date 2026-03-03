@@ -6,7 +6,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Balagopalaji/forge.git",
+    "url": "https://github.com/Balagopalaji/nimai.git",
     "directory": "packages/cli"
   },
   "files": ["dist/"],
