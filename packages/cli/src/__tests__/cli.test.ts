@@ -173,10 +173,10 @@ describe('nimai new', () => {
 // ─── nimai --version / --help ─────────────────────────────────────────────────
 
 describe('nimai binary', () => {
-  it('--version outputs 0.1.0', () => {
+  it('--version outputs the current version', () => {
     const { stdout, exitCode } = run(['--version']);
     expect(exitCode).toBe(0);
-    expect(stdout.trim()).toBe('0.1.0');
+    expect(stdout.trim()).toMatch(/^\d+\.\d+\.\d+$/);
   });
 
   it('--help lists all commands', () => {

@@ -10,7 +10,7 @@ const program = new Command();
 program
   .name('nimai')
   .description('Nimai — spec ops CLI for AI work\n\nCommands: spec, validate, review, new\nPlanned (M3b): nimai run — execute a spec end-to-end (deferred pending usage data)')
-  .version('0.1.0');
+  .version('0.1.2', '-v, --version');
 
 program
   .command('spec <request>')
