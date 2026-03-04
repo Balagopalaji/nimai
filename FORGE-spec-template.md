@@ -374,3 +374,5 @@ Acceptance criteria: _____________________________________
 
 *FORGE Spec Template v1.0 — companion to the FORGE system. A blank field is an unresolved decision.*
 *System docs: Quick Reference · Canonical Framework · Spec Template (this doc)*
+
+<!-- nimai-spec -->

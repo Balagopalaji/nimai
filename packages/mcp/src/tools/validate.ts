@@ -6,5 +6,5 @@ export async function toolValidate(
   input: z.infer<typeof ForgeValidateInput>
 ): Promise<ForgeValidateOutput> {
   const issues = lintSpec(input.specPath);
-  return { issues, passed: issues.length === 0 };
+  return { issues, passed: issues.filter(i => !i.advisory).length === 0 };
 }

@@ -16,8 +16,10 @@ export function runValidate(specPath: string, options: ValidateOptions = {}): vo
   const hard = issues.filter(i => !i.advisory);
   const advisory = issues.filter(i => i.advisory);
 
+  const PASS_ADVISORY = 'PASS (structural): required sections/fields are complete. Semantic quality is not guaranteed; review acceptance criteria and constraints before execution.';
+
   if (hard.length === 0 && advisory.length === 0) {
-    console.log('✓ Spec passed — no issues found.');
+    console.log(PASS_ADVISORY);
     return;
   }
 
@@ -55,5 +57,9 @@ export function runValidate(specPath: string, options: ValidateOptions = {}): vo
 
   if (hard.length > 0 || options.strictArchitecture) {
     process.exit(1);
+  }
+
+  if (hard.length === 0) {
+    console.log(PASS_ADVISORY);
   }
 }
