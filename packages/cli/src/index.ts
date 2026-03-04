@@ -6,12 +6,15 @@ import { runReview } from './commands/review';
 import { runNew } from './commands/new';
 import { runSpecReview } from './commands/spec-review';
 
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { version } = require('../package.json') as { version: string };
+
 const program = new Command();
 
 program
   .name('nimai')
   .description('Nimai — spec ops CLI for AI work\n\nCommands: spec, validate, review, spec-review, new\nPlanned (M3b): nimai run — execute a spec end-to-end (deferred pending usage data)')
-  .version('0.1.2', '-v, --version');
+  .version(version, '-v, --version');
 
 program
   .command('spec <request>')
