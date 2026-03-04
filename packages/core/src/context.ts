@@ -49,9 +49,9 @@ function walkDir(
         continue;
       }
 
-      const relevance = scoreRelevance(entry.name, content, keywords);
+      const relPath = path.relative(rootPath, fullPath);
+      const relevance = scoreRelevance(entry.name, content, keywords, relPath);
       if (relevance > 0) {
-        const relPath = path.relative(rootPath, fullPath);
         results.push({
           file: relPath,
           snippet: content.slice(0, MAX_SNIPPET_CHARS),
@@ -62,10 +62,29 @@ function walkDir(
   }
 }
 
-function scoreRelevance(filename: string, content: string, keywords: string[]): number {
+// Source dirs score higher than docs/examples/schemas
+const SOURCE_DIR_PATTERNS = ['src/', 'lib/', 'app/', 'server/', 'api/'];
+const DOCS_DIR_PATTERNS = ['docs/', 'examples/', 'schemas/'];
+
+function scoreRelevance(filename: string, content: string, keywords: string[], relPath?: string): number {
   if (keywords.length === 0) return 1;
   const lower = (filename + ' ' + content).toLowerCase();
-  return keywords.filter(k => lower.includes(k)).length;
+  const keywordScore = keywords.filter(k => lower.includes(k)).length;
+  if (keywordScore === 0) return 0;
+
+  // Filename boost: if the filename itself matches a keyword, it's likely the most relevant file
+  const filenameLower = filename.toLowerCase().replace(/\.[^.]+$/, '');
+  const filenameBoost = keywords.some(k => filenameLower.includes(k)) ? 2 : 0;
+
+  // Path boost: source files score higher than docs/examples
+  let pathBoost = 0;
+  if (relPath) {
+    const rel = relPath.toLowerCase();
+    if (SOURCE_DIR_PATTERNS.some(p => rel.startsWith(p))) pathBoost = 1;
+    if (DOCS_DIR_PATTERNS.some(p => rel.startsWith(p))) pathBoost = -1;
+  }
+
+  return keywordScore + filenameBoost + pathBoost;
 }
 
 function tokenize(request: string): string[] {
