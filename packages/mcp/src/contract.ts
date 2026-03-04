@@ -126,10 +126,14 @@ export const TOOL_DESCRIPTORS = {
   nimai_spec_review: {
     name: 'nimai_spec_review',
     description:
-      'USE THIS BEFORE BUILDING: evaluates whether a draft spec is ready to hand to a builder. ' +
-      'Returns a Prompt 1.5 (spec-quality reviewer) — pass it to an LLM to get a {passed, issues} verdict. ' +
+      'USE THIS BEFORE BUILDING: returns a Prompt 1.5 spec-quality reviewer. ' +
       'Only call this after nimai_validate passes. ' +
-      'If passed=false, fix the spec directly using the issues list, re-run nimai_validate, then call this again — do NOT re-call nimai_spec. ' +
+      'IMPORTANT: this tool returns a prompt string — it does NOT perform the review itself. ' +
+      'After calling this tool, you MUST use the returned specReviewerPrompt as your next input and evaluate the spec yourself. ' +
+      'Read the prompt, apply the 6 dimensions, then end your response with the JSON verdict block: ' +
+      '{"passed": true/false, "schema_version": "2", "issues": [...]}. ' +
+      'The review is NOT complete until you have produced and the human has seen that verdict block. ' +
+      'If passed=false, fix the spec, re-run nimai_validate, then call this again. ' +
       'For reviewing an implementation against an approved spec, use nimai_review instead.',
     inputSchema: ForgeSpecReviewInput,
   },
