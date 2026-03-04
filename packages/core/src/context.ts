@@ -4,7 +4,7 @@ import { ContextItem } from './types';
 
 const MAX_FILES = 20;
 const INCLUDE_EXTENSIONS = new Set(['.ts', '.js', '.md', '.json', '.yaml', '.yml']);
-const EXCLUDE_DIRS = new Set(['node_modules', '.git', 'dist', '.next', '__pycache__']);
+const EXCLUDE_DIRS = new Set(['node_modules', '.git', 'dist', '.next', '__pycache__', 'tmp', '.tmp', 'coverage', '.cache', 'build', 'out']);
 const MAX_SNIPPET_CHARS = 2000;
 
 export function extractContext(repoPath: string, request: string): ContextItem[] {
