@@ -13,6 +13,8 @@ The Nimai MCP server exposes five tools to any MCP-compatible AI host:
 The server makes **no internal LLM calls**. Your host model (Claude, Codex, etc.)
 does all generation. The tools return structured context and prompts.
 
+> **Naming convention:** MCP tool names use underscores (`nimai_spec_review`); the equivalent CLI commands use hyphens (`nimai spec-review`). These are the same capability — different naming follows each interface's convention.
+
 ---
 
 ## Installation

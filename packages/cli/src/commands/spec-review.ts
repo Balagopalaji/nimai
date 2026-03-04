@@ -33,5 +33,7 @@ export function runSpecReview(specPath: string, options: SpecReviewOptions): voi
     console.log('');
     console.log('--- PROMPT ---');
     console.log(specReviewerPrompt);
+    console.log('');
+    console.log('Tip: use --out <file> to save this prompt for reuse.');
   }
 }
