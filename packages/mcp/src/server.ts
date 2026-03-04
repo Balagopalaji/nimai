@@ -11,9 +11,12 @@ import { toolValidate } from './tools/validate';
 import { toolNew } from './tools/new';
 import { toolSpecReview } from './tools/spec-review';
 
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { version } = require('../package.json') as { version: string };
+
 export function createServer(): Server {
   const server = new Server(
-    { name: 'nimai', version: '0.1.0' },
+    { name: 'nimai', version },
     { capabilities: { tools: {} } }
   );
 
