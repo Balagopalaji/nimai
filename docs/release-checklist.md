@@ -113,11 +113,19 @@ git push origin v0.1.0
 Before implementing M3b (`nimai run`), manually verify that the spec-review loop
 converges in ≤3 iterations on at least two real specs:
 
-- [ ] Run `nimai spec-review <spec.md>` on a real project spec
-- [ ] Pass the resulting `specReviewerPrompt` to your host model
-- [ ] If the verdict is `passed: false`, refine the spec using the issues list and re-review
-- [ ] Confirm that **convergence happens within 3 iterations** (i.e., the spec passes by iteration 3)
+- [x] Run `nimai spec-review <spec.md>` on a real project spec
+- [x] Pass the resulting `specReviewerPrompt` to your host model
+- [x] If the verdict is `passed: false`, refine the spec using the issues list and re-review
+- [x] Confirm that **convergence happens within 3 iterations** (i.e., the spec passes by iteration 3)
 - [ ] Repeat with a second spec from a different domain
+
+**Benchmark 1 — ChatMasala data model spec (2026-03-04):**
+- Iteration 1: `nimai_spec_review` returned FAIL — scope coherence: conceptual lifecycle states
+  (open/agent_assigned/handed_off) not mapped to persisted enum (active|pending_handoff|closed)
+- Fix: builder added lifecycle mapping table (conceptual → persisted status + side effects) and module
+  boundary definition
+- Iteration 2: `nimai_spec_review` returned PASS — all 5 dimensions clean; `nimai_validate` passed: true
+- Result: converged in **2 iterations** ✅
 
 This is a manual smoke test — no automated benchmark is required. Record any issues
 in the project log before proceeding.
