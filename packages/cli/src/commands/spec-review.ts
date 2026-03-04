@@ -25,15 +25,29 @@ export function runSpecReview(specPath: string, options: SpecReviewOptions): voi
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
     fs.writeFileSync(outPath, specReviewerPrompt, 'utf-8');
     console.log(`Spec reviewer prompt written to ${outPath}`);
+    console.log('');
+    console.log('⚠  INDEPENDENT REVIEW REQUIRED');
+    console.log('Paste the contents of that file into a fresh session with a different model.');
+    console.log('The reviewer must not be the same agent that created this spec.');
   } else {
     console.log('=== NIMAI SPEC REVIEW PROMPT ===');
     console.log('');
-    console.log('Pass the following prompt to a reviewing LLM.');
-    console.log('The LLM response will contain a JSON verdict block with {passed, issues}.');
+    console.log('⚠  INDEPENDENT REVIEW REQUIRED');
+    console.log('The agent that built this spec must NOT be its own reviewer.');
     console.log('');
-    console.log('--- PROMPT ---');
+    console.log('Steps:');
+    console.log('1. Copy the prompt below.');
+    console.log('2. Open a fresh session with a different model or agent.');
+    console.log('3. Paste the prompt — the reviewer will evaluate and end with:');
+    console.log('   {"passed": true/false, "schema_version": "2", "issues": [...]}');
+    console.log('4. Bring the verdict back to this session.');
+    console.log('');
+    console.log('--- PROMPT (copy everything below this line) ---');
+    console.log('');
     console.log(specReviewerPrompt);
     console.log('');
-    console.log('Tip: use --out <file> to save this prompt for reuse.');
+    console.log('--- END PROMPT ---');
+    console.log('');
+    console.log('Tip: use --out <file> to save this prompt to a file instead.');
   }
 }

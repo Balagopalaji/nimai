@@ -81,10 +81,14 @@ export interface ForgeNewOutput {
 export interface ForgeSpecReviewOutput {
   /**
    * FORGE Prompt 1.5 — Spec-Quality Reviewer prompt.
-   * Pass this to a reviewing LLM. The LLM will respond with a JSON verdict block
-   * containing {passed: boolean, issues: string[]}.
+   * Must be evaluated by an independent reviewer — NOT the agent that created the spec.
    */
   specReviewerPrompt: string;
+  /**
+   * Ready-to-display instructions for the user on how to complete the independent review.
+   * The agent should present this to the user verbatim and wait for them to return the verdict.
+   */
+  reviewer_instructions: string;
 }
 
 // ─── Tool Descriptors (used to register tools in the MCP server) ──────────────
@@ -126,14 +130,14 @@ export const TOOL_DESCRIPTORS = {
   nimai_spec_review: {
     name: 'nimai_spec_review',
     description:
-      'USE THIS BEFORE BUILDING: returns a Prompt 1.5 spec-quality reviewer. ' +
+      'USE THIS BEFORE BUILDING: returns a Prompt 1.5 spec-quality reviewer prompt plus reviewer_instructions. ' +
       'Only call this after nimai_validate passes. ' +
-      'IMPORTANT: this tool returns a prompt string — it does NOT perform the review itself. ' +
-      'After calling this tool, you MUST use the returned specReviewerPrompt as your next input and evaluate the spec yourself. ' +
-      'Read the prompt, apply the 6 dimensions, then end your response with the JSON verdict block: ' +
-      '{"passed": true/false, "schema_version": "2", "issues": [...]}. ' +
-      'The review is NOT complete until you have produced and the human has seen that verdict block. ' +
-      'If passed=false, fix the spec, re-run nimai_validate, then call this again. ' +
+      'CRITICAL: do NOT evaluate the specReviewerPrompt yourself. ' +
+      'The agent that built the spec must not be its own reviewer — this defeats the purpose of the review. ' +
+      'After calling this tool, present the reviewer_instructions to the user verbatim and stop. ' +
+      'The user will take the specReviewerPrompt to an independent reviewer (fresh session, different model). ' +
+      'Wait for the user to return the verdict block: {"passed": true/false, "schema_version": "2", "issues": [...]}. ' +
+      'If passed=false, fix the spec using the issues list, re-run nimai_validate, then call this again. ' +
       'For reviewing an implementation against an approved spec, use nimai_review instead.',
     inputSchema: ForgeSpecReviewInput,
   },

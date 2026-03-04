@@ -154,10 +154,13 @@ describe('nimai_new tool', () => {
 });
 
 describe('nimai_spec_review tool', () => {
-  it('returns a specReviewerPrompt string', async () => {
+  it('returns specReviewerPrompt and reviewer_instructions strings', async () => {
     const result = await toolSpecReview({ specPath: VALID_SPEC });
     expect(typeof result.specReviewerPrompt).toBe('string');
     expect(result.specReviewerPrompt.length).toBeGreaterThan(100);
+    expect(typeof result.reviewer_instructions).toBe('string');
+    expect(result.reviewer_instructions).toContain('INDEPENDENT REVIEW REQUIRED');
+    expect(result.reviewer_instructions).toContain('FRESH SESSION');
   });
 
   it('prompt contains Spec-Quality Reviewer header', async () => {
