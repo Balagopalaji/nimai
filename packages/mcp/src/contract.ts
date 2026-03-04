@@ -32,7 +32,7 @@ export const ForgeValidateInput = z.object({
 });
 
 export const ForgeNewInput = z.object({
-  outputPath: z.string().describe('Path where the new spec file should be written'),
+  outputPath: z.string().min(1).describe('Path where the new spec file should be written'),
 });
 
 // ─── Output Types ─────────────────────────────────────────────────────────────

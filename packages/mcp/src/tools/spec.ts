@@ -1,3 +1,4 @@
+import * as fs from 'fs';
 import * as path from 'path';
 import { extractContext, buildPrompt1 } from 'nimai-core';
 import { ForgeSpecInput, ForgeSpecOutput } from '../contract';
@@ -7,6 +8,9 @@ export async function toolSpec(
   input: z.infer<typeof ForgeSpecInput>
 ): Promise<ForgeSpecOutput> {
   const repoPath = path.resolve(input.repoPath);
+  if (!fs.existsSync(repoPath)) {
+    throw new Error(`repoPath does not exist: ${repoPath}`);
+  }
   const context = extractContext(repoPath, input.request);
 
   const contextSummary = context
