@@ -50,26 +50,13 @@ with `--no-git-checks` or via `pnpm -r publish`.
 
 ### 4. Publish order
 
-Publish in dependency order:
+**Always use `pnpm publish` or `pnpm -r publish` — never `npm publish` directly.**
+`npm publish` does not rewrite `workspace:*` dependency specifiers, which breaks
+`npm install -g nimai-cli` with `EUNSUPPORTEDPROTOCOL` errors.
 
 ```bash
-# 1. Core first (no workspace deps)
-cd packages/core
-npm publish --access public
-
-# 2. MCP (depends on nimai-core)
-cd ../mcp
-npm publish --access public
-
-# 3. CLI (depends on nimai-core + nimai-mcp)
-cd ../cli
-npm publish --access public
-```
-
-Or use pnpm's recursive publish:
-
-```bash
-pnpm -r publish --access public
+# From repo root — pnpm handles workspace:* rewriting and dependency order automatically
+pnpm -r publish --access public --no-git-checks
 ```
 
 ### 5. Post-publish smoke test
