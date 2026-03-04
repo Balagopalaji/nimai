@@ -94,8 +94,9 @@ export const TOOL_DESCRIPTORS = {
   nimai_review: {
     name: 'nimai_review',
     description:
-      'Returns a populated FORGE Reviewer/Validator prompt (Prompt 2) derived from an approved spec file. ' +
-      'The host model uses this to validate agent output against the spec.',
+      'USE THIS AFTER BUILDING: returns a Reviewer/Validator prompt (Prompt 2) to check whether an ' +
+      'implementation satisfies an approved spec. ' +
+      'For checking spec quality BEFORE building, use nimai_spec_review instead.',
     inputSchema: ForgeReviewInput,
   },
   nimai_validate: {
@@ -114,10 +115,10 @@ export const TOOL_DESCRIPTORS = {
   nimai_spec_review: {
     name: 'nimai_spec_review',
     description:
-      'Returns a FORGE Prompt 1.5 (Spec-Quality Reviewer) for a draft spec file. ' +
-      'Pass the returned specReviewerPrompt to a reviewing LLM. ' +
-      'The LLM response will include a JSON verdict block with {passed, issues} — ' +
-      'parse that block to drive the spec-review loop. No LLM call is made inside this tool.',
+      'USE THIS BEFORE BUILDING: evaluates whether a draft spec is ready to hand to a builder. ' +
+      'Returns a Prompt 1.5 (spec-quality reviewer) — pass it to an LLM to get a {passed, issues} verdict. ' +
+      'If passed=false, loop back to nimai_spec with the issues. ' +
+      'For reviewing an implementation against an approved spec, use nimai_review instead.',
     inputSchema: ForgeSpecReviewInput,
   },
 } as const;
