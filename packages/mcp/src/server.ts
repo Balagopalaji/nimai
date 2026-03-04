@@ -4,11 +4,12 @@ import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js';
-import { TOOL_DESCRIPTORS, ForgeSpecInput, ForgeReviewInput, ForgeValidateInput, ForgeNewInput } from './contract';
+import { TOOL_DESCRIPTORS, ForgeSpecInput, ForgeReviewInput, ForgeValidateInput, ForgeNewInput, ForgeSpecReviewInput } from './contract';
 import { toolSpec } from './tools/spec';
 import { toolReview } from './tools/review';
 import { toolValidate } from './tools/validate';
 import { toolNew } from './tools/new';
+import { toolSpecReview } from './tools/spec-review';
 
 export function createServer(): Server {
   const server = new Server(
@@ -58,6 +59,11 @@ export function createServer(): Server {
         case 'nimai_new': {
           const input = ForgeNewInput.parse(args);
           result = await toolNew(input);
+          break;
+        }
+        case 'nimai_spec_review': {
+          const input = ForgeSpecReviewInput.parse(args);
+          result = await toolSpecReview(input);
           break;
         }
         default:

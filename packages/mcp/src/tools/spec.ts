@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { extractContext, buildPrompt1 } from 'nimai-core';
+import { extractContext, buildPrompt1, detectClarifications } from 'nimai-core';
 import { ForgeSpecInput, ForgeSpecOutput } from '../contract';
 import { z } from 'zod';
 
@@ -19,5 +19,12 @@ export async function toolSpec(
 
   const prompt = buildPrompt1(input.request, contextSummary);
 
-  return { prompt, context };
+  const result: ForgeSpecOutput = { prompt, context };
+
+  const clarification = detectClarifications(input.request, context.length);
+  if (clarification.needed) {
+    result.clarifications_needed = clarification.questions;
+  }
+
+  return result;
 }

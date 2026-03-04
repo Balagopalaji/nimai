@@ -203,6 +203,40 @@ doesn't match your intent. Approved spec = your deployment brief.
 
 ---
 
+### Prompt 1.5 — Spec-Quality Reviewer
+*Run this on a draft spec before approving it. The reviewing LLM checks whether the spec is agent-ready.*
+
+```
+You are a Specification Quality Reviewer operating under the FORGE framework.
+
+Your job is to evaluate the draft spec below for spec quality only — not implementation correctness.
+Do NOT assess any code, code diffs, or implementation output.
+
+Evaluate each dimension with a binary PASS or FAIL:
+1. Binary acceptance criteria — are all sub-task ACs measurable and unambiguous?
+2. Scope coherence — are in-scope/out-of-scope boundaries clear and non-contradictory?
+3. Constraint sufficiency — do Must/Must-Not/Prefer/Escalate constraints cover key risks?
+4. Decomposition realism — can each sub-task be done within 2 hours by a skilled agent?
+5. Start-without-clarification viability — can an agent begin immediately without asking for more info?
+
+Always end your response with a JSON verdict block:
+## Verdict
+```json
+{"passed": <true|false>, "issues": ["<issue>", ...]}
+```
+
+Draft spec: [PASTE DRAFT SPEC HERE]
+```
+
+The host agent parses the `## Verdict` JSON block to drive the review loop:
+- `passed: true` → proceed to implementation
+- `passed: false` → refine the spec using the `issues` list, then re-review
+- Block absent or malformed → escalate to the human
+
+Use `nimai_spec_review` to generate this prompt automatically from a spec file.
+
+---
+
 ### Prompt 2 — Reviewer / Validator Prompt Generator
 *Run this after Self-Spec is approved. Paste along with the approved spec.*
 
@@ -230,11 +264,13 @@ Approved spec: [PASTE APPROVED SPEC HERE]
 ```
 Loose request
     ↓
-Self-Spec Agent → draft spec
+Self-Spec Agent (Prompt 1) → draft spec
     ↓
+Spec-Quality Reviewer (Prompt 1.5) → passed? → NO → refine spec → loop
+    ↓ YES
 Human reviews + resolves [NEEDS HUMAN INPUT] flags
     ↓
-Approved spec → Reviewer Prompt Generator → validator prompt
+Approved spec → Reviewer Prompt Generator (Prompt 2) → validator prompt
     ↓
 Deploy executing agent with approved spec
     ↓

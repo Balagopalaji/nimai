@@ -35,6 +35,10 @@ export const ForgeNewInput = z.object({
   outputPath: z.string().min(1).describe('Path where the new spec file should be written'),
 });
 
+export const ForgeSpecReviewInput = z.object({
+  specPath: z.string().describe('Path to the draft spec markdown file to evaluate'),
+});
+
 // ─── Output Types ─────────────────────────────────────────────────────────────
 
 export interface ForgeSpecOutput {
@@ -42,6 +46,12 @@ export interface ForgeSpecOutput {
   prompt: string;
   /** Repo context items extracted for the request */
   context: ContextItem[];
+  /**
+   * Concrete follow-up questions when request ambiguity blocks reliable spec drafting.
+   * Triggered when request is under 10 words OR zero repo files matched.
+   * Optional — absent when no clarification is needed.
+   */
+  clarifications_needed?: string[];
 }
 
 export interface ForgeReviewOutput {
@@ -51,7 +61,7 @@ export interface ForgeReviewOutput {
 
 export interface ForgeValidateOutput {
   issues: LintIssue[];
-  /** true if zero issues found */
+  /** true if zero hard (non-advisory) issues found */
   passed: boolean;
 }
 
@@ -60,6 +70,15 @@ export interface ForgeNewOutput {
   path: string;
   /** Content written to the file */
   content: string;
+}
+
+export interface ForgeSpecReviewOutput {
+  /**
+   * FORGE Prompt 1.5 — Spec-Quality Reviewer prompt.
+   * Pass this to a reviewing LLM. The LLM will respond with a JSON verdict block
+   * containing {passed: boolean, issues: string[]}.
+   */
+  specReviewerPrompt: string;
 }
 
 // ─── Tool Descriptors (used to register tools in the MCP server) ──────────────
@@ -91,5 +110,14 @@ export const TOOL_DESCRIPTORS = {
     description:
       'Scaffolds a new FORGE spec file from the canonical template at the specified output path.',
     inputSchema: ForgeNewInput,
+  },
+  nimai_spec_review: {
+    name: 'nimai_spec_review',
+    description:
+      'Returns a FORGE Prompt 1.5 (Spec-Quality Reviewer) for a draft spec file. ' +
+      'Pass the returned specReviewerPrompt to a reviewing LLM. ' +
+      'The LLM response will include a JSON verdict block with {passed, issues} — ' +
+      'parse that block to drive the spec-review loop. No LLM call is made inside this tool.',
+    inputSchema: ForgeSpecReviewInput,
   },
 } as const;

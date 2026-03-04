@@ -1,6 +1,6 @@
 # Nimai MCP Server — Setup Guide
 
-The Nimai MCP server exposes four tools to any MCP-compatible AI host:
+The Nimai MCP server exposes five tools to any MCP-compatible AI host:
 
 | Tool | What it does |
 |------|-------------|
@@ -8,6 +8,7 @@ The Nimai MCP server exposes four tools to any MCP-compatible AI host:
 | `nimai_review` | Generates a reviewer/validator prompt from an approved spec |
 | `nimai_validate` | Lints a spec file — returns issues and pass/fail |
 | `nimai_new` | Scaffolds a new spec file from the canonical template |
+| `nimai_spec_review` | Returns a Prompt 1.5 (Spec-Quality Reviewer) for a draft spec |
 
 The server makes **no internal LLM calls**. Your host model (Claude, Codex, etc.)
 does all generation. The tools return structured context and prompts.
@@ -162,7 +163,7 @@ Or run the automated E2E test from the monorepo:
 pnpm --filter nimai-mcp test
 ```
 
-Expected: 4 tools listed (`nimai_spec`, `nimai_review`, `nimai_validate`, `nimai_new`).
+Expected: 5 tools listed (`nimai_spec`, `nimai_review`, `nimai_validate`, `nimai_new`, `nimai_spec_review`).
 
 ---
 
@@ -179,3 +180,63 @@ model: claude-sonnet-4-6
 ```
 
 Precedence: CLI flags > environment variables (API keys) > `.nimai/config.yaml` > defaults.
+
+---
+
+## Spec → Spec-Review → Loop protocol
+
+This is the recommended pre-execution quality gate for ensuring a draft spec is
+agent-ready before handing it off for implementation.
+
+### Step 1 — Generate a draft spec
+
+```
+nimai_spec({ repoPath: "/path/to/repo", request: "your request" })
+  → { prompt, context[], clarifications_needed? }
+```
+
+If `clarifications_needed` is present, answer each question and re-call `nimai_spec`
+with an enriched request before proceeding.
+
+### Step 2 — Review spec quality (Prompt 1.5)
+
+```
+nimai_spec_review({ specPath: "/path/to/draft-spec.md" })
+  → { specReviewerPrompt }
+```
+
+Pass `specReviewerPrompt` to a reviewing LLM (your host model). The reviewing LLM
+will evaluate the spec against five quality dimensions and end its response with:
+
+```
+## Verdict
+\`\`\`json
+{"passed": true, "issues": []}
+\`\`\`
+```
+
+### Step 3 — Parse the verdict and loop
+
+- If `passed: true` → proceed to implementation.
+- If `passed: false` → use the `issues` list to refine the spec, then return to Step 2.
+- If the verdict block is absent or malformed → escalate to the human.
+
+The loop is **host-orchestrated**. Nimai makes no LLM calls and has no internal loop logic.
+
+### Host responsibilities
+
+| Step | Host action |
+|------|------------|
+| Step 1 | Call `nimai_spec`, surface `clarifications_needed` to the human if present |
+| Step 2 | Call `nimai_spec_review`, pass the prompt to the reviewing LLM |
+| Step 3 | Parse `## Verdict` JSON block; loop or proceed based on `passed` |
+
+### Prompt 1.5 — Spec-Quality Review dimensions
+
+The reviewing LLM checks five dimensions:
+
+1. **Binary acceptance criteria** — are all sub-task ACs measurable and unambiguous?
+2. **Scope coherence** — are in-scope/out-of-scope boundaries clear and non-contradictory?
+3. **Constraint sufficiency** — do Must/Must-Not/Prefer/Escalate constraints cover key risks?
+4. **Decomposition realism** — can each sub-task be done within 2 hours by a skilled agent?
+5. **Start-without-clarification viability** — can an agent begin without asking for more info?

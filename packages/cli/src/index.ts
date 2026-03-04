@@ -4,12 +4,13 @@ import { runSpec } from './commands/spec';
 import { runValidate } from './commands/validate';
 import { runReview } from './commands/review';
 import { runNew } from './commands/new';
+import { runSpecReview } from './commands/spec-review';
 
 const program = new Command();
 
 program
   .name('nimai')
-  .description('Nimai — spec ops CLI for AI work\n\nCommands: spec, validate, review, new\nPlanned (M3b): nimai run — execute a spec end-to-end (deferred pending usage data)')
+  .description('Nimai — spec ops CLI for AI work\n\nCommands: spec, validate, review, spec-review, new\nPlanned (M3b): nimai run — execute a spec end-to-end (deferred pending usage data)')
   .version('0.1.2', '-v, --version');
 
 program
@@ -59,6 +60,14 @@ program
   .option('--out <file>', 'Write reviewer prompt to file instead of stdout')
   .action((specPath: string, options: { out?: string }) => {
     runReview(specPath, { out: options.out });
+  });
+
+program
+  .command('spec-review <specPath>')
+  .description('Generate a FORGE Prompt 1.5 (Spec-Quality Reviewer) for a draft spec')
+  .option('--out <file>', 'Write reviewer prompt to file instead of stdout')
+  .action((specPath: string, options: { out?: string }) => {
+    runSpecReview(specPath, { out: options.out });
   });
 
 program

@@ -73,7 +73,7 @@ function spawnServer(): SpawnedServer {
 }
 
 describe('MCP server E2E', () => {
-  it('starts, lists exactly 4 tools with correct names, then exits cleanly', async () => {
+  it('starts, lists exactly 5 tools with correct names, then exits cleanly', async () => {
     const server = spawnServer();
 
     // 1. Initialize handshake
@@ -92,13 +92,14 @@ describe('MCP server E2E', () => {
     expect(toolsRes.error).toBeUndefined();
 
     const tools = (toolsRes.result as { tools: Array<{ name: string }> }).tools;
-    expect(tools).toHaveLength(4);
+    expect(tools).toHaveLength(5);
 
     const names = tools.map(t => t.name);
     expect(names).toContain('nimai_spec');
     expect(names).toContain('nimai_review');
     expect(names).toContain('nimai_validate');
     expect(names).toContain('nimai_new');
+    expect(names).toContain('nimai_spec_review');
 
     // 4. Clean shutdown
     await server.shutdown();

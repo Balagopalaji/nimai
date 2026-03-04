@@ -30,7 +30,7 @@ describe('nimai validate', () => {
   it('exits 0 and reports no issues for a clean spec', () => {
     const { stdout, exitCode } = run(['validate', VALID_SPEC]);
     expect(exitCode).toBe(0);
-    expect(stdout).toContain('passed');
+    expect(stdout).toContain('PASS (structural)');
   });
 
   it('exits 1 and reports issues for a spec with problems', () => {
@@ -170,6 +170,45 @@ describe('nimai new', () => {
   });
 });
 
+// ─── nimai spec-review ────────────────────────────────────────────────────────
+
+describe('nimai spec-review', () => {
+  it('exits 0 and outputs NIMAI SPEC REVIEW PROMPT header', () => {
+    const { stdout, exitCode } = run(['spec-review', VALID_SPEC]);
+    expect(exitCode).toBe(0);
+    expect(stdout).toContain('NIMAI SPEC REVIEW PROMPT');
+  });
+
+  it('output contains Spec-Quality Reviewer header', () => {
+    const { stdout } = run(['spec-review', VALID_SPEC]);
+    expect(stdout).toContain('Specification Quality Reviewer');
+  });
+
+  it('output instructs LLM to emit JSON verdict block', () => {
+    const { stdout } = run(['spec-review', VALID_SPEC]);
+    expect(stdout).toContain('## Verdict');
+    expect(stdout).toContain('"passed"');
+  });
+
+  it('exits 1 on missing spec file', () => {
+    const { stderr, exitCode } = run(['spec-review', '/nonexistent/spec.md']);
+    expect(exitCode).toBe(1);
+    expect(stderr).toContain('Error');
+  });
+
+  it('writes to --out file when specified', () => {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'nimai-spec-review-'));
+    const outFile = path.join(tmpDir, 'review-prompt.md');
+
+    const { exitCode } = run(['spec-review', VALID_SPEC, '--out', outFile]);
+    expect(exitCode).toBe(0);
+    expect(fs.existsSync(outFile)).toBe(true);
+    expect(fs.readFileSync(outFile, 'utf-8')).toContain('Specification Quality Reviewer');
+
+    fs.rmSync(tmpDir, { recursive: true });
+  });
+});
+
 // ─── nimai --version / --help ─────────────────────────────────────────────────
 
 describe('nimai binary', () => {
@@ -186,5 +225,6 @@ describe('nimai binary', () => {
     expect(stdout).toContain('validate');
     expect(stdout).toContain('review');
     expect(stdout).toContain('new');
+    expect(stdout).toContain('spec-review');
   });
 });

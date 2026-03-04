@@ -16,7 +16,7 @@ Follow this checklist before publishing any package to npm.
 ```bash
 pnpm build
 pnpm test
-# Expected: 92/92 tests pass (28 core + 15 mcp + 49 cli)
+# Expected: 120/120 tests pass (41 core + 25 mcp + 54 cli)
 ```
 
 ### 2. Verify pack output
@@ -107,6 +107,22 @@ git push origin v0.1.0
 > Note: MCP tool contract is **locked at v1**. Any change to tool names or
 > input/output shapes is a breaking change requiring a major version bump and
 > consultation with users before proceeding.
+
+## Pre-M3b manual verification gate
+
+Before implementing M3b (`nimai run`), manually verify that the spec-review loop
+converges in ≤3 iterations on at least two real specs:
+
+- [ ] Run `nimai spec-review <spec.md>` on a real project spec
+- [ ] Pass the resulting `specReviewerPrompt` to your host model
+- [ ] If the verdict is `passed: false`, refine the spec using the issues list and re-review
+- [ ] Confirm that **convergence happens within 3 iterations** (i.e., the spec passes by iteration 3)
+- [ ] Repeat with a second spec from a different domain
+
+This is a manual smoke test — no automated benchmark is required. Record any issues
+in the project log before proceeding.
+
+---
 
 ## Deferred features (do not implement without a FORGE spec)
 

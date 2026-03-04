@@ -6,6 +6,7 @@ import { toolValidate } from '../tools/validate';
 import { toolSpec } from '../tools/spec';
 import { toolNew } from '../tools/new';
 import { toolReview } from '../tools/review';
+import { toolSpecReview } from '../tools/spec-review';
 import { TOOL_DESCRIPTORS } from '../contract';
 
 const FORGE_ROOT = path.join(__dirname, '../../../../');
@@ -13,8 +14,8 @@ const VALID_SPEC = path.join(FORGE_ROOT, 'packages/core/src/__tests__/fixtures/v
 const TEST_SPEC = path.join(FORGE_ROOT, 'packages/core/src/__tests__/fixtures/test-spec.md');
 
 describe('MCP contract — tool descriptors', () => {
-  it('exposes exactly 4 tools', () => {
-    expect(Object.keys(TOOL_DESCRIPTORS)).toHaveLength(4);
+  it('exposes exactly 5 tools', () => {
+    expect(Object.keys(TOOL_DESCRIPTORS)).toHaveLength(5);
   });
 
   it('all tools have name, description, and inputSchema', () => {
@@ -25,12 +26,13 @@ describe('MCP contract — tool descriptors', () => {
     }
   });
 
-  it('tool names are nimai_spec, nimai_review, nimai_validate, nimai_new', () => {
+  it('tool names include nimai_spec, nimai_review, nimai_validate, nimai_new, nimai_spec_review', () => {
     const names = Object.values(TOOL_DESCRIPTORS).map(d => d.name);
     expect(names).toContain('nimai_spec');
     expect(names).toContain('nimai_review');
     expect(names).toContain('nimai_validate');
     expect(names).toContain('nimai_new');
+    expect(names).toContain('nimai_spec_review');
   });
 });
 
@@ -77,6 +79,37 @@ describe('nimai_spec tool', () => {
     const r2 = await toolSpec({ repoPath: FORGE_ROOT, request: 'build a CLI' });
     expect(r1.prompt).toBe(r2.prompt);
   });
+
+  it('returns clarifications_needed for short request (under 10 words)', async () => {
+    const result = await toolSpec({ repoPath: FORGE_ROOT, request: 'add auth' });
+    expect(Array.isArray(result.clarifications_needed)).toBe(true);
+    expect(result.clarifications_needed!.length).toBeGreaterThan(0);
+  });
+
+  it('returns clarifications_needed when no domain nouns are present', async () => {
+    const result = await toolSpec({
+      repoPath: FORGE_ROOT,
+      request: 'the thing we discussed previously with the other team please handle',
+    });
+    expect(Array.isArray(result.clarifications_needed)).toBe(true);
+    expect(result.clarifications_needed!.length).toBeGreaterThan(0);
+  });
+
+  it('returns clarifications_needed when conflicting stack hints are detected', async () => {
+    const result = await toolSpec({
+      repoPath: FORGE_ROOT,
+      request: 'add a data pipeline that processes events using Python and TypeScript services together somehow',
+    });
+    expect(Array.isArray(result.clarifications_needed)).toBe(true);
+    expect(result.clarifications_needed!.length).toBeGreaterThan(0);
+  });
+
+  it('does not return clarifications_needed for a well-formed request with context', async () => {
+    const request = 'add JWT authentication middleware to the Express router with role-based access control support';
+    const result = await toolSpec({ repoPath: FORGE_ROOT, request });
+    // Well-formed: >10 words, has domain nouns, no stack conflict, repo has files
+    expect(result.clarifications_needed).toBeUndefined();
+  });
 });
 
 describe('nimai_new tool', () => {
@@ -101,6 +134,44 @@ describe('nimai_new tool', () => {
     expect(fs.existsSync(outputPath)).toBe(true);
 
     fs.rmSync(tmpDir, { recursive: true });
+  });
+});
+
+describe('nimai_spec_review tool', () => {
+  it('returns a specReviewerPrompt string', async () => {
+    const result = await toolSpecReview({ specPath: VALID_SPEC });
+    expect(typeof result.specReviewerPrompt).toBe('string');
+    expect(result.specReviewerPrompt.length).toBeGreaterThan(100);
+  });
+
+  it('prompt contains Spec-Quality Reviewer header', async () => {
+    const result = await toolSpecReview({ specPath: VALID_SPEC });
+    expect(result.specReviewerPrompt).toContain('Specification Quality Reviewer');
+    expect(result.specReviewerPrompt).toContain('Verdict');
+  });
+
+  it('prompt instructs LLM to emit JSON verdict block', async () => {
+    const result = await toolSpecReview({ specPath: VALID_SPEC });
+    expect(result.specReviewerPrompt).toContain('"passed"');
+    expect(result.specReviewerPrompt).toContain('"issues"');
+  });
+
+  it('prompt embeds the spec content', async () => {
+    const result = await toolSpecReview({ specPath: VALID_SPEC });
+    // The spec content should appear in the prompt
+    const specContent = fs.readFileSync(VALID_SPEC, 'utf-8');
+    // At least some portion of the spec should be in the prompt
+    expect(result.specReviewerPrompt).toContain(specContent.substring(0, 50));
+  });
+
+  it('makes zero LLM calls — result is deterministic for same input', async () => {
+    const r1 = await toolSpecReview({ specPath: VALID_SPEC });
+    const r2 = await toolSpecReview({ specPath: VALID_SPEC });
+    expect(r1.specReviewerPrompt).toBe(r2.specReviewerPrompt);
+  });
+
+  it('throws on missing spec file', async () => {
+    await expect(toolSpecReview({ specPath: '/nonexistent/spec.md' })).rejects.toThrow();
   });
 });
 
