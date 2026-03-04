@@ -185,10 +185,20 @@ Precedence: CLI flags > environment variables (API keys) > `.nimai/config.yaml` 
 
 ---
 
-## Spec → Spec-Review → Loop protocol
+## Spec → Validate → Spec-Review → Loop protocol
 
 This is the recommended pre-execution quality gate for ensuring a draft spec is
 agent-ready before handing it off for implementation.
+
+```
+nimai_spec → fill spec → nimai_validate → nimai_spec_review → verdict
+                              ↑                                    |
+                              └──────── fix spec ──────────────────┘
+                                        (on FAIL)
+```
+
+**Every iteration of the loop runs validate before spec-review** — including re-runs after a fix.
+Validate is instant (no LLM call). Never call spec-review on a spec that hasn't just passed validate.
 
 ### Step 1 — Generate a draft spec
 
@@ -200,7 +210,23 @@ nimai_spec({ repoPath: "/path/to/repo", request: "your request" })
 If `clarifications_needed` is present, answer each question and re-call `nimai_spec`
 with an enriched request before proceeding.
 
-### Step 2 — Review spec quality (Prompt 1.5)
+Fill in the returned prompt to produce a spec file, then save it.
+
+### Step 2 — Structural lint (every iteration)
+
+```
+nimai_validate({ specPath: "/path/to/draft-spec.md" })
+  → { issues[], passed }
+```
+
+- If `passed: false` → fix structural issues (blank fields, missing sections, pre-checked ACs) first.
+- If `passed: true` → proceed to Step 3.
+
+Run this **on every loop iteration**, including after fixing a spec-review FAIL. A fix can
+accidentally introduce new structural problems; validate catches them for free before you spend
+an LLM call on spec-review.
+
+### Step 3 — Semantic review (Prompt 1.5)
 
 ```
 nimai_spec_review({ specPath: "/path/to/draft-spec.md" })
@@ -208,19 +234,19 @@ nimai_spec_review({ specPath: "/path/to/draft-spec.md" })
 ```
 
 Pass `specReviewerPrompt` to a reviewing LLM (your host model). The reviewing LLM
-will evaluate the spec against five quality dimensions and end its response with:
+evaluates the spec against six quality dimensions and ends its response with:
 
 ```
 ## Verdict
 \`\`\`json
-{"passed": true, "issues": []}
+{"passed": true, "schema_version": "2", "issues": []}
 \`\`\`
 ```
 
-### Step 3 — Parse the verdict and loop
+### Step 4 — Parse the verdict and loop
 
 - If `passed: true` → proceed to implementation.
-- If `passed: false` → use the `issues` list to refine the spec, then return to Step 2.
+- If `passed: false` → use the `issues` list to refine the spec, then **return to Step 2** (validate first).
 - If the verdict block is absent or malformed → escalate to the human.
 
 The loop is **host-orchestrated**. Nimai makes no LLM calls and has no internal loop logic.
@@ -230,15 +256,18 @@ The loop is **host-orchestrated**. Nimai makes no LLM calls and has no internal 
 | Step | Host action |
 |------|------------|
 | Step 1 | Call `nimai_spec`, surface `clarifications_needed` to the human if present |
-| Step 2 | Call `nimai_spec_review`, pass the prompt to the reviewing LLM |
-| Step 3 | Parse `## Verdict` JSON block; loop or proceed based on `passed` |
+| Step 2 | Call `nimai_validate` — fix structural issues before proceeding |
+| Step 3 | Call `nimai_spec_review`, pass the prompt to the reviewing LLM |
+| Step 4 | Parse `## Verdict` JSON block; if FAIL, loop back to Step 2 (not Step 3) |
 
-### Prompt 1.5 — Spec-Quality Review dimensions
+### Prompt 1.5 — Spec-Quality Review dimensions (v2, 6 dimensions)
 
-The reviewing LLM checks five dimensions:
+The reviewing LLM checks six dimensions. Each issue is classified as `HARD_FAIL`, `SOFT_FAIL`, or `NOTE`.
+`passed: true` requires zero `HARD_FAIL` issues.
 
-1. **Binary acceptance criteria** — are all sub-task ACs measurable and unambiguous?
-2. **Scope coherence** — are in-scope/out-of-scope boundaries clear and non-contradictory?
+1. **Binary acceptance criteria** — are all sub-task ACs measurable and unambiguous? Any pre-checked `- [x]` ACs are a hard fail.
+2. **Scope coherence** — are in-scope/out-of-scope boundaries clear and non-contradictory? Mismatches between conceptual terms and persisted models are a hard fail.
 3. **Constraint sufficiency** — do Must/Must-Not/Prefer/Escalate constraints cover key risks?
-4. **Decomposition realism** — can each sub-task be done within 2 hours by a skilled agent?
+4. **Decomposition realism** — can each sub-task be done within 2 hours by a skilled agent? Sub-task dependencies must be stated explicitly.
 5. **Start-without-clarification viability** — can an agent begin without asking for more info?
+6. **Internal consistency** — are terms, names, and concepts used consistently throughout the spec?
