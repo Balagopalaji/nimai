@@ -6,6 +6,11 @@ import * as path from 'path';
  * FORGE-quickref.md. Works regardless of where the package is installed.
  */
 function findForgeRoot(): string {
+  // 1. Check bundled data/ directory (works when installed via npm)
+  const bundled = path.join(__dirname, '..', 'data');
+  if (fs.existsSync(path.join(bundled, 'FORGE-quickref.md'))) return bundled;
+
+  // 2. Walk up from __dirname (works in monorepo dev)
   let dir = __dirname;
   for (let i = 0; i < 10; i++) {
     if (fs.existsSync(path.join(dir, 'FORGE-quickref.md'))) return dir;
