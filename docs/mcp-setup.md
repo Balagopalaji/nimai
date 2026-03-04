@@ -200,7 +200,18 @@ nimai_spec → fill spec → nimai_validate → nimai_spec_review → verdict
 **Every iteration of the loop runs validate before spec-review** — including re-runs after a fix.
 Validate is instant (no LLM call). Never call spec-review on a spec that hasn't just passed validate.
 
-### Step 1 — Generate a draft spec
+### Step 0 — Scaffold the spec file (new projects)
+
+```
+nimai_new({ outputPath: "/path/to/repo/my-feature-spec.md" })
+  → { path, content }
+```
+
+Creates a blank FORGE spec template with the `<!-- nimai-spec -->` marker.
+**Always do this first** — it gives you the file to fill in Steps 1–2.
+Skip only if a spec file already exists.
+
+### Step 1 — Get the prompt bundle
 
 ```
 nimai_spec({ repoPath: "/path/to/repo", request: "your request" })
@@ -210,7 +221,7 @@ nimai_spec({ repoPath: "/path/to/repo", request: "your request" })
 If `clarifications_needed` is present, answer each question and re-call `nimai_spec`
 with an enriched request before proceeding.
 
-Fill in the returned prompt to produce a spec file, then save it.
+Use the returned `prompt` to fill in the scaffolded spec file from Step 0.
 
 ### Step 2 — Structural lint (every iteration)
 
@@ -255,10 +266,11 @@ The loop is **host-orchestrated**. Nimai makes no LLM calls and has no internal 
 
 | Step | Host action |
 |------|------------|
-| Step 1 | Call `nimai_spec`, surface `clarifications_needed` to the human if present |
+| Step 0 | Call `nimai_new` to scaffold the spec file (new projects only) |
+| Step 1 | Call `nimai_spec`, surface `clarifications_needed` to the human if present; fill the spec |
 | Step 2 | Call `nimai_validate` — fix structural issues before proceeding |
 | Step 3 | Call `nimai_spec_review`, pass the prompt to the reviewing LLM |
-| Step 4 | Parse `## Verdict` JSON block; if FAIL, loop back to Step 2 (not Step 3) |
+| Step 4 | Parse `## Verdict` JSON block; if FAIL, fix spec and loop back to Step 2 (not Step 3) |
 
 ### Prompt 1.5 — Spec-Quality Review dimensions (v2, 6 dimensions)
 

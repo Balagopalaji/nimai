@@ -1,6 +1,6 @@
 {
   "name": "nimai-mcp",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "Nimai MCP server — exposes nimai_spec, nimai_review, nimai_validate, nimai_new as tools. No internal LLM calls.",
   "keywords": ["nimai", "forge", "mcp", "model-context-protocol", "ai", "llm", "specification", "claude", "codex"],
   "license": "MIT",

@@ -88,7 +88,10 @@ export const TOOL_DESCRIPTORS = {
     name: 'nimai_spec',
     description:
       'Returns a populated FORGE Self-Spec Agent prompt (Prompt 1) plus extracted repo context. ' +
-      'The host model uses this bundle to generate a draft spec — no LLM call is made inside this tool.',
+      'The host model uses this bundle to fill a draft spec — no LLM call is made inside this tool. ' +
+      'FULL LOOP: (1) call nimai_new to scaffold the spec file, (2) call this tool to get the prompt bundle, ' +
+      '(3) fill the scaffolded spec using the returned prompt, (4) call nimai_validate, ' +
+      '(5) call nimai_spec_review. Do not skip nimai_new — without it there is no spec file to fill.',
     inputSchema: ForgeSpecInput,
   },
   nimai_review: {
