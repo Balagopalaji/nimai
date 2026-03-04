@@ -16,24 +16,28 @@ Follow this checklist before publishing any package to npm.
 ```bash
 pnpm build
 pnpm test
-# Expected: 120/120 tests pass (41 core + 25 mcp + 54 cli)
+# Expected: 148/148 tests pass (67 core + 27 mcp + 54 cli)
 ```
 
-### 2. Verify pack output
+### 2. Verify pack output — smoke install gate
+
+Check pack contents, then do a real install smoke test to catch `workspace:*` regressions:
 
 ```bash
-# Core
-cd packages/core && npm pack --dry-run
-# Expected: only dist/ files listed
+# Dry-run pack (check file list)
+pnpm -r pack --dry-run
+# Expected: only dist/ files; no workspace:* in dependencies
 
-# MCP
-cd ../mcp && npm pack --dry-run
-# Expected: only dist/ files listed, nimai-mcp binary included
-
-# CLI
-cd ../cli && npm pack --dry-run
-# Expected: only dist/ files listed, nimai binary included
+# Install smoke test (catches workspace:* publish bugs)
+TMP=$(mktemp -d) && cd "$TMP"
+npm install nimai-mcp@latest nimai-cli@latest
+./node_modules/.bin/nimai --version
+./node_modules/.bin/nimai-mcp --help
+echo "smoke: OK" && cd - && rm -rf "$TMP"
 ```
+
+If `npm install` fails with `EUNSUPPORTEDPROTOCOL workspace:*`, you used `npm publish` instead of
+`pnpm -r publish`. Bump the patch and republish with `pnpm -r publish --access public --no-git-checks`.
 
 ### 3. Version bump
 

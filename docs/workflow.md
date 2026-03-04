@@ -74,3 +74,20 @@ A reviewer operating in repo A must not edit files in repo B (the executor's rep
 - ACs must not reference external project paths (e.g. no `ChatMasala/` paths in a forge spec)
 - ACs that require real LLM execution must be marked **manual benchmark gates**, not unit test gates
 - Pre-checked `[x]` ACs in a spec are invalid — ACs are unchecked until the work is verified complete
+
+---
+
+## Legacy Spec Migration
+
+Specs written before v0.3.0 will be missing the `<!-- nimai-spec: YYYY-MM-DD -->` marker.
+`nimai validate` will report this as an advisory warning. To stamp existing specs:
+
+```bash
+# Stamp a specific spec (replace with actual date)
+echo '\n<!-- nimai-spec: 2026-03-05 -->' >> path/to/your-spec.md
+
+# Find all unmarked .md files in a repo (advisory only — safe to ignore if not nimai specs)
+nimai validate path/to/spec.md
+```
+
+Specs created with `nimai new` are stamped automatically with today's date.

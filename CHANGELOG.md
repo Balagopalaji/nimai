@@ -10,6 +10,24 @@ Packages: `nimai-core` · `nimai-mcp` · `nimai-cli`
 
 ---
 
+## [0.3.2] — 2026-03-05 — nimai-core · nimai-mcp · nimai-cli
+
+### Changed
+- `nimai spec --standalone` now runs lint automatically after generation (opt out with `--no-validate`)
+- `nimai_spec_review` MCP description: clarified "fix spec + re-validate, do NOT re-call nimai_spec"
+- `nimai_validate` MCP description: added pre-checked AC mention and when-to-run guidance
+
+---
+
+## [0.3.1] — 2026-03-05 — nimai-core · nimai-mcp · nimai-cli
+
+### Fixed
+- `workspace:*` dependency specifiers were being published verbatim by `npm publish`, breaking
+  `npm install -g nimai-cli`. Switched to `pnpm -r publish` which rewrites them to real versions.
+- `docs/release-checklist.md`: documented `pnpm -r publish` as the required publish command.
+
+---
+
 ## [0.3.0] — 2026-03-05 — nimai-core · nimai-mcp · nimai-cli
 
 ### Added
