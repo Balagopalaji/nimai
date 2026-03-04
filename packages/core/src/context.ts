@@ -84,8 +84,8 @@ function scoreRelevance(filename: string, content: string, keywords: string[], r
     if (DOCS_DIR_PATTERNS.some(p => rel.startsWith(p))) pathBoost = -1;
   }
 
-  // Nimai spec boost: files containing the <!-- nimai-spec --> marker are prioritised
-  const nimaiBoost = content.includes('<!-- nimai-spec -->') ? 2 : 0;
+  // Nimai spec boost: files containing <!-- nimai-spec --> or <!-- nimai-spec: DATE --> marker
+  const nimaiBoost = /<!--\s*nimai-spec[:\s]/.test(content) ? 2 : 0;
 
   return keywordScore + filenameBoost + pathBoost + nimaiBoost;
 }

@@ -5,6 +5,7 @@ import { runValidate } from './commands/validate';
 import { runReview } from './commands/review';
 import { runNew } from './commands/new';
 import { runSpecReview } from './commands/spec-review';
+import { resolveSpecPath } from './commands/resolve-spec';
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const { version } = require('../package.json') as { version: string };
@@ -50,27 +51,30 @@ program
   });
 
 program
-  .command('validate <specPath>')
+  .command('validate [specPath]')
   .description('Lint a spec file for unresolved fields, NHFI flags, and missing sections')
   .option('--strict-architecture', 'Treat advisory architecture warnings as errors (exits 1)')
-  .action((specPath: string, options: { strictArchitecture?: boolean }) => {
-    runValidate(specPath, { strictArchitecture: !!options.strictArchitecture });
+  .action(async (specPath: string | undefined, options: { strictArchitecture?: boolean }) => {
+    const resolved = await resolveSpecPath(specPath);
+    runValidate(resolved, { strictArchitecture: !!options.strictArchitecture });
   });
 
 program
-  .command('review <specPath>')
+  .command('review [specPath]')
   .description('Generate a FORGE reviewer/validator prompt from an approved spec')
   .option('--out <file>', 'Write reviewer prompt to file instead of stdout')
-  .action((specPath: string, options: { out?: string }) => {
-    runReview(specPath, { out: options.out });
+  .action(async (specPath: string | undefined, options: { out?: string }) => {
+    const resolved = await resolveSpecPath(specPath);
+    runReview(resolved, { out: options.out });
   });
 
 program
-  .command('spec-review <specPath>')
+  .command('spec-review [specPath]')
   .description('Generate a FORGE Prompt 1.5 (Spec-Quality Reviewer) for a draft spec')
   .option('--out <file>', 'Write reviewer prompt to file instead of stdout')
-  .action((specPath: string, options: { out?: string }) => {
-    runSpecReview(specPath, { out: options.out });
+  .action(async (specPath: string | undefined, options: { out?: string }) => {
+    const resolved = await resolveSpecPath(specPath);
+    runSpecReview(resolved, { out: options.out });
   });
 
 program

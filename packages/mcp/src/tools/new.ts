@@ -17,6 +17,8 @@ export async function toolNew(
     fs.mkdirSync(dir, { recursive: true });
   }
 
-  fs.writeFileSync(outputPath, template.raw, 'utf-8');
-  return { path: outputPath, content: template.raw };
+  const date = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+  const content = template.raw.replace('<!-- nimai-spec -->', `<!-- nimai-spec: ${date} -->`);
+  fs.writeFileSync(outputPath, content, 'utf-8');
+  return { path: outputPath, content };
 }
