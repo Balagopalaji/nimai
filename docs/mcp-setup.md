@@ -17,51 +17,48 @@ does all generation. The tools return structured context and prompts.
 ## Installation
 
 ```bash
-# Install the MCP server globally
 npm install -g nimai-mcp
-
-# Or run from the monorepo (development)
-pnpm build
 ```
+
+That's it. No path configuration needed — `npx` resolves the package automatically
+when your AI host starts the server.
 
 ---
 
 ## Claude Code
 
-Add the server to your Claude Code MCP configuration:
+```bash
+claude mcp add nimai-mcp -- npx nimai-mcp
+```
+
+Or edit `~/.claude/mcp_servers.json` directly:
+
+```json
+{
+  "nimai-mcp": {
+    "command": "npx",
+    "args": ["nimai-mcp"]
+  }
+}
+```
+
+---
+
+## Codex (OpenAI)
 
 ```bash
-claude mcp add nimai-mcp -- node /path/to/node_modules/nimai-mcp/dist/index.js
+codex mcp add nimai-mcp -- npx nimai-mcp
 ```
 
-Or edit `~/.claude/mcp-servers.json` directly:
+Or edit `~/.codex/config.json`:
 
 ```json
 {
-  "nimai-mcp": {
-    "command": "node",
-    "args": ["/path/to/node_modules/nimai-mcp/dist/index.js"]
-  }
-}
-```
-
-If you installed globally via npm:
-
-```json
-{
-  "nimai-mcp": {
-    "command": "nimai-mcp"
-  }
-}
-```
-
-If working from the monorepo:
-
-```json
-{
-  "nimai-mcp": {
-    "command": "node",
-    "args": ["/absolute/path/to/forge/packages/mcp/dist/index.js"]
+  "mcpServers": {
+    "nimai-mcp": {
+      "command": "npx",
+      "args": ["nimai-mcp"]
+    }
   }
 }
 ```
@@ -76,55 +73,25 @@ Add to `~/.gemini/settings.json` (global) or `.gemini/settings.json` (project-le
 {
   "mcpServers": {
     "nimai-mcp": {
-      "command": "node",
-      "args": ["/path/to/node_modules/nimai-mcp/dist/index.js"]
+      "command": "npx",
+      "args": ["nimai-mcp"]
     }
   }
 }
-```
-
-Or use the CLI to add it interactively:
-
-```bash
-gemini mcp add
 ```
 
 ---
 
 ## OpenCode
 
-Add to your OpenCode config file (`~/.config/opencode/config.json` or project-level `opencode.json`):
+Add to `~/.config/opencode/config.json` or project-level `opencode.json`:
 
 ```json
 {
   "mcp": {
     "nimai-mcp": {
-      "command": "node",
-      "args": ["/path/to/node_modules/nimai-mcp/dist/index.js"]
-    }
-  }
-}
-```
-
-Or use the CLI:
-
-```bash
-opencode mcp add
-```
-
----
-
-## Codex (OpenAI)
-
-Add to your Codex MCP server configuration. In `~/.codex/config.json` (or
-wherever your Codex config lives):
-
-```json
-{
-  "mcpServers": {
-    "nimai-mcp": {
-      "command": "node",
-      "args": ["/path/to/node_modules/nimai-mcp/dist/index.js"]
+      "command": "npx",
+      "args": ["nimai-mcp"]
     }
   }
 }
@@ -134,21 +101,34 @@ wherever your Codex config lives):
 
 ## Cursor
 
-Open Cursor settings and navigate to **Features → MCP**. Add a new server:
-
-- **Name:** `nimai-mcp`
-- **Command:** `node`
-- **Args:** `/path/to/node_modules/nimai-mcp/dist/index.js`
-
-Or edit `.cursor/mcp.json` in your project root:
+Edit `.cursor/mcp.json` in your project root:
 
 ```json
 {
   "mcpServers": {
     "nimai-mcp": {
-      "command": "node",
-      "args": ["/path/to/node_modules/nimai-mcp/dist/index.js"]
+      "command": "npx",
+      "args": ["nimai-mcp"]
     }
+  }
+}
+```
+
+Or open Cursor settings → **Features → MCP** and add:
+- **Command:** `npx`
+- **Args:** `nimai-mcp`
+
+---
+
+## Monorepo (development)
+
+If working from source instead of the published package:
+
+```json
+{
+  "nimai-mcp": {
+    "command": "node",
+    "args": ["/absolute/path/to/forge/packages/mcp/dist/index.js"]
   }
 }
 ```
@@ -172,12 +152,8 @@ needed anywhere in the Nimai config.
 
 ## Verifying the server
 
-Test that the server lists all 4 tools correctly:
-
 ```bash
-# Start the server and send a tools/list request via stdin
-echo '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test","version":"0.0.1"}}}' | \
-  node /path/to/node_modules/nimai-mcp/dist/index.js
+npx nimai-mcp --help
 ```
 
 Or run the automated E2E test from the monorepo:
