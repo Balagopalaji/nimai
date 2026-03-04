@@ -192,3 +192,19 @@ describe('nimai_review tool', () => {
     await expect(toolReview({ specPath: '/nonexistent/spec.md' })).rejects.toThrow();
   });
 });
+
+describe('doc mirror sync', () => {
+  const DATA_DIR = path.join(__dirname, '../../data');
+
+  it('FORGE-spec-template.md matches repo root copy', () => {
+    const root = fs.readFileSync(path.join(FORGE_ROOT, 'FORGE-spec-template.md'), 'utf-8');
+    const bundled = fs.readFileSync(path.join(DATA_DIR, 'FORGE-spec-template.md'), 'utf-8');
+    expect(bundled).toBe(root);
+  });
+
+  it('FORGE-quickref.md matches repo root copy', () => {
+    const root = fs.readFileSync(path.join(FORGE_ROOT, 'FORGE-quickref.md'), 'utf-8');
+    const bundled = fs.readFileSync(path.join(DATA_DIR, 'FORGE-quickref.md'), 'utf-8');
+    expect(bundled).toBe(root);
+  });
+});

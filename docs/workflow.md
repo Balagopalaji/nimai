@@ -39,11 +39,25 @@ Builder executes
 nimai_review evaluates implementation
 ```
 
-### Enforcement
+### Enforcement — Required Gate Checklist
 
-- In PR checklist: "Did the reviewer edit any builder artifacts? If yes, revert and re-route."
-- In agent instructions: explicitly state which role the agent is playing before it starts.
-- When in doubt: flag, don't fix. A reviewer who finds a bug should report it, not patch it.
+Before merging any PR or closing a build task, answer these questions. **Any "yes" is a blocker.**
+
+| # | Question | Block if |
+|---|----------|---------|
+| 1 | Did the reviewing agent (nimai_spec_review / nimai_review) edit any files in the builder's repo? | Yes |
+| 2 | Did the builder edit the spec after it was approved (not during the fix loop)? | Yes |
+| 3 | Did the reviewer patch a bug directly instead of reporting it? | Yes |
+| 4 | Is the same agent acting as both builder and final reviewer for the same artifact? | Yes |
+| 5 | Does the spec contain any pre-checked ACs (`- [x]`) that were not verified by the validator? | Yes |
+
+If any gate fails:
+1. Revert the violating change
+2. Re-route through the correct role
+3. Re-run `nimai_validate` and `nimai_spec_review` from scratch
+
+In agent instructions: explicitly state which role the agent is playing **before it starts**.
+When in doubt: flag, don't fix. A reviewer who finds a bug should report it, not patch it.
 
 ---
 

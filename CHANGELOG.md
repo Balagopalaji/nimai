@@ -8,30 +8,40 @@ Packages: `nimai-core` · `nimai-mcp` · `nimai-cli`
 
 ## [Unreleased]
 
+---
+
+## [0.3.0] — 2026-03-05 — nimai-core · nimai-mcp · nimai-cli
+
 ### Added
 - `nimai_spec_review` MCP tool — returns FORGE Prompt 1.5 (spec-quality reviewer prompt); no LLM calls
 - `nimai spec-review <spec.md>` CLI command with `--out` flag
-- `buildPrompt15()` in core — evaluates 5 spec-quality dimensions; instructs reviewing LLM to emit machine-parseable JSON verdict block `{passed, issues}`
+- `buildPrompt15()` in core — evaluates 6 spec-quality dimensions with evidence citation requirement; instructs reviewing LLM to emit machine-parseable JSON verdict block `{passed, schema_version, issues}`
+- **Prompt 1.5 v2 verdict schema** — `issues` is now `VerdictIssue[]` with `dimension`, `severity` (`HARD_FAIL` | `SOFT_FAIL` | `NOTE`), and `detail`; `schema_version: "2"` field added; 6th dimension: internal consistency / contradiction detection
+- `verdict.ts` — `parseVerdict()` utility exported from `nimai-core`; accepts v1 (string[]) and v2 (object[]) formats; returns `MALFORMED_VERDICT` on absent or malformed block
 - `clarification.ts` shared module — 4 rule-based heuristics for detecting ambiguous requests (word count, zero context files, no domain nouns, conflicting stack hints)
-- `clarifications_needed?: string[]` optional field on `nimai_spec` / `nimai_spec_review` output — MCP returns field, CLI TTY prompts via readline, hosted prints preflight section
+- `clarifications_needed?: string[]` optional field on `nimai_spec` output
 - `<!-- nimai-spec -->` marker appended to all `nimai_new`-scaffolded spec files; context extractor boosts files containing this marker
-- `docs/product-positioning.md` — product scope and positioning alignment doc
-- `docs/workflow.md` — reviewer/executor separation rules and AC hygiene
-- `docs/independent-validation.md` — dark factory convention, E2E oracle requirements
+- Lint rule `pre_checked_ac` (hard fail) — detects `- [x]` list items in draft specs (ACs must be unchecked at spec creation time)
+- Lint rule `missing_marker` (advisory) — warns when no `<!-- nimai-spec -->` marker found
+- Doc mirror sync test — MCP test suite verifies `FORGE-spec-template.md` and `FORGE-quickref.md` are identical between repo root and `packages/mcp/data/`
+- `docs/product-positioning.md`, `docs/workflow.md`, `docs/independent-validation.md`, `docs/contract-policy.md`
+- `benchmarks/` folder with Benchmark 1 artifacts (ChatMasala data model, 2026-03-04)
 - `specs/nimai-spec-review.md` — dogfood FORGE spec for the spec-review feature
 
 ### Fixed
 - `nimai_validate`: `passed` was incorrectly `false` for advisory-only issues — now `passed=true` when only advisory issues present
-- CLI `validate`: replaced generic "passed" message with explicit `PASS (structural)` advisory noting semantic quality is not guaranteed
-- `ForgeValidateOutput.passed` JSDoc: corrected to "true if zero hard (non-advisory) issues found"
-- `buildPrompt15` verdict block template: replaced placeholder syntax with real example values
+- CLI `validate`: replaced generic "passed" message with explicit `PASS (structural)` advisory
 - Context extractor: added `tmp`, `.tmp`, `coverage`, `.cache`, `build`, `out` to excluded directories
 
 ### Changed
-- E2E test updated to assert exactly 5 tools (added `nimai_spec_review`)
-- `FORGE-quickref.md` and MCP data mirror: added Prompt 1.5 template, updated tool table to 5 tools, documented `spec → spec_review → loop` protocol
+- Prompt 1.5 upgraded from 5 to 6 dimensions; evidence citation now required for every verdict; graduated severity replaces binary PASS/FAIL for issues
+- Clarification heuristic tests rewritten as table-driven `test.each()` fixtures (19 test cases)
+- `docs/workflow.md`: added Required Gate Checklist (5 binary yes/no questions) making reviewer/executor separation a hard gate
 - `docs/mcp-setup.md`: added loop protocol and clarification mode behavior
-- `docs/release-checklist.md`: added manual benchmark gate for spec-review loop convergence (≤3 iterations before M3b)
+- `docs/release-checklist.md`: added manual benchmark gate
+
+### Tests
+- 148 total (67 core + 27 mcp + 54 cli) — up from 120
 
 ---
 

@@ -1,123 +1,184 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, test } from 'vitest';
 import { detectClarifications } from '../clarification';
 
-describe('detectClarifications — short request heuristic', () => {
-  it('triggers when request is under 10 words', () => {
+// ─── Table-driven fixtures ────────────────────────────────────────────────────
+// Each row: [label, request, contextFileCount, expectNeeded, expectReasonSubstring | null]
+// expectReasonSubstring: if provided, that substring must appear in reasons when expectNeeded=true
+
+type Fixture = {
+  label: string;
+  request: string;
+  contextFiles: number;
+  expectNeeded: boolean;
+  /** Which reason substring must be present (undefined = don't check specific reason) */
+  expectReason?: string;
+  /** Which reason substring must NOT be present */
+  rejectReason?: string;
+};
+
+const FIXTURES: Fixture[] = [
+  // ── Rule 1: word count < 10 ─────────────────────────────────────────────
+  {
+    label: 'triggers on 2-word request',
+    request: 'add auth',
+    contextFiles: 5,
+    expectNeeded: true,
+    expectReason: 'too short',
+  },
+  {
+    label: 'triggers on 9-word request (boundary)',
+    request: 'add JWT auth middleware to the Express API here',
+    contextFiles: 5,
+    expectNeeded: true,
+    expectReason: 'too short',
+  },
+  {
+    label: 'does NOT trigger word-count rule for 10+ word request',
+    request: 'add JWT authentication middleware to the Express router with refresh support',
+    contextFiles: 5,
+    expectNeeded: false,
+    rejectReason: 'too short',
+  },
+
+  // ── Rule 2: zero context files ───────────────────────────────────────────
+  {
+    label: 'triggers when zero repo files matched',
+    request: 'add authentication middleware to the Express API with JWT token refresh logic',
+    contextFiles: 0,
+    expectNeeded: true,
+    expectReason: 'no relevant repo files',
+  },
+  {
+    label: 'does NOT trigger zero-files rule when 1+ context file present',
+    request: 'add JWT authentication middleware to the Express API with token refresh logic',
+    contextFiles: 1,
+    expectNeeded: false,
+    rejectReason: 'no relevant repo files',
+  },
+
+  // ── Rule 3: no domain nouns ──────────────────────────────────────────────
+  {
+    label: 'triggers on vague all-pronoun request',
+    request: 'the thing that we talked about before and it does that',
+    contextFiles: 5,
+    expectNeeded: true,
+    expectReason: 'no recognizable domain nouns',
+  },
+  {
+    label: 'does NOT trigger domain-noun rule when action verb present',
+    request: 'add authentication middleware to the Express API with JWT token support and refresh logic',
+    contextFiles: 5,
+    expectNeeded: false,
+    rejectReason: 'no recognizable domain nouns',
+  },
+  {
+    label: '"build" counts as domain verb',
+    request: 'build a thing here right now with some stuff please do it',
+    contextFiles: 5,
+    expectNeeded: false,
+    rejectReason: 'no recognizable domain nouns',
+  },
+  {
+    label: '"create" counts as domain verb',
+    request: 'create the new stuff that we discussed and wire it all up correctly',
+    contextFiles: 5,
+    expectNeeded: false,
+    rejectReason: 'no recognizable domain nouns',
+  },
+
+  // ── Rule 4: conflicting stack ────────────────────────────────────────────
+  {
+    label: 'triggers for Python + TypeScript in same request',
+    request: 'add a data pipeline that processes events using Python and TypeScript services together',
+    contextFiles: 5,
+    expectNeeded: true,
+    expectReason: 'conflicting technology stack',
+  },
+  {
+    label: 'triggers for React + Vue in same request',
+    request: 'migrate the frontend from React to Vue and update all existing tests accordingly',
+    contextFiles: 5,
+    expectNeeded: true,
+    expectReason: 'conflicting technology stack',
+  },
+  {
+    label: 'triggers for Jest + Vitest in same request',
+    request: 'convert all jest tests to vitest and make sure the suite still passes correctly',
+    contextFiles: 5,
+    expectNeeded: true,
+    expectReason: 'conflicting technology stack',
+  },
+  {
+    label: 'does NOT trigger for single stack mention',
+    request: 'add a React component that fetches data from the REST API and renders a sortable table',
+    contextFiles: 5,
+    expectNeeded: false,
+    rejectReason: 'conflicting technology stack',
+  },
+  {
+    label: 'does NOT trigger for different stack groups (PostgreSQL + React = no conflict)',
+    request: 'add a React component that queries PostgreSQL via the REST API and displays results',
+    contextFiles: 5,
+    expectNeeded: false,
+    rejectReason: 'conflicting technology stack',
+  },
+
+  // ── Clean / no triggers ──────────────────────────────────────────────────
+  {
+    label: 'clean well-formed request → needed=false',
+    request: 'add JWT authentication middleware to the Express router with role-based access control',
+    contextFiles: 3,
+    expectNeeded: false,
+  },
+  {
+    label: 'clean request returns empty questions array',
+    request: 'add JWT authentication middleware to the Express router with role-based access control',
+    contextFiles: 3,
+    expectNeeded: false,
+  },
+];
+
+describe('detectClarifications — table-driven fixtures', () => {
+  test.each(FIXTURES)('$label', ({ request, contextFiles, expectNeeded, expectReason, rejectReason }) => {
+    const result = detectClarifications(request, contextFiles);
+    expect(result.needed).toBe(expectNeeded);
+
+    if (expectReason) {
+      expect(result.reasons.some(r => r.includes(expectReason))).toBe(true);
+    }
+    if (rejectReason) {
+      expect(result.reasons.some(r => r.includes(rejectReason))).toBe(false);
+    }
+    if (expectNeeded) {
+      expect(result.questions.length).toBeGreaterThan(0);
+    } else {
+      expect(result.questions).toHaveLength(0);
+    }
+  });
+});
+
+// ── Structural invariants ────────────────────────────────────────────────────
+
+describe('detectClarifications — structural invariants', () => {
+  it('questions are always strings', () => {
     const result = detectClarifications('add auth', 5);
-    expect(result.needed).toBe(true);
-    expect(result.reasons.some(r => r.includes('too short'))).toBe(true);
-  });
-
-  it('does not trigger for word count alone when request is ≥10 words with domain nouns', () => {
-    const result = detectClarifications(
-      'add JWT authentication middleware to the Express API with token refresh support',
-      5
-    );
-    // May still trigger if conflicting stack or no domain nouns, but word count alone should not
-    const wordCountReason = result.reasons.filter(r => r.includes('too short'));
-    expect(wordCountReason).toHaveLength(0);
-  });
-});
-
-describe('detectClarifications — zero context files heuristic', () => {
-  it('triggers when zero repo files matched', () => {
-    const result = detectClarifications(
-      'add authentication middleware to the Express API with JWT token refresh',
-      0
-    );
-    expect(result.needed).toBe(true);
-    expect(result.reasons.some(r => r.includes('no relevant repo files'))).toBe(true);
-  });
-
-  it('does not trigger the zero-files reason when context files are present', () => {
-    const result = detectClarifications(
-      'add JWT authentication middleware to the Express API with token refresh',
-      3
-    );
-    const zeroFilesReason = result.reasons.filter(r => r.includes('no relevant repo files'));
-    expect(zeroFilesReason).toHaveLength(0);
-  });
-});
-
-describe('detectClarifications — domain noun heuristic', () => {
-  it('triggers when no domain nouns or action verbs are present', () => {
-    // A request with no recognizable technical domain tokens
-    const result = detectClarifications('the thing that we talked about before', 5);
-    expect(result.needed).toBe(true);
-    expect(result.reasons.some(r => r.includes('no recognizable domain nouns'))).toBe(true);
-  });
-
-  it('does not trigger domain-noun reason when action verbs are present', () => {
-    const result = detectClarifications(
-      'add authentication middleware to the Express API with JWT token support and refresh logic',
-      5
-    );
-    const domainReason = result.reasons.filter(r => r.includes('no recognizable domain nouns'));
-    expect(domainReason).toHaveLength(0);
-  });
-
-  it('recognises "build" as a domain action verb', () => {
-    // "build a thing" has a domain verb but is short — tests only domain noun check
-    const result = detectClarifications('build a thing here now with stuff please do it', 5);
-    const domainReason = result.reasons.filter(r => r.includes('no recognizable domain nouns'));
-    expect(domainReason).toHaveLength(0);
-  });
-});
-
-describe('detectClarifications — conflicting stack heuristic', () => {
-  it('triggers when Python and TypeScript both appear', () => {
-    const result = detectClarifications(
-      'add a data pipeline that processes events using Python and TypeScript services working together',
-      5
-    );
-    expect(result.needed).toBe(true);
-    expect(result.reasons.some(r => r.includes('conflicting technology stack'))).toBe(true);
-  });
-
-  it('triggers when React and Vue both appear', () => {
-    const result = detectClarifications(
-      'migrate the frontend components from React to Vue and update all the existing tests accordingly',
-      5
-    );
-    expect(result.needed).toBe(true);
-    expect(result.reasons.some(r => r.includes('conflicting technology stack'))).toBe(true);
-  });
-
-  it('does not trigger when only one stack is mentioned', () => {
-    const result = detectClarifications(
-      'add a React component that fetches data from the REST API and renders a sortable table',
-      5
-    );
-    const stackReason = result.reasons.filter(r => r.includes('conflicting technology stack'));
-    expect(stackReason).toHaveLength(0);
-  });
-
-  it('does not trigger when different stack groups appear (not competing)', () => {
-    // PostgreSQL + React are in different groups — no conflict
-    const result = detectClarifications(
-      'add a React component that queries PostgreSQL via the REST API and displays results',
-      5
-    );
-    const stackReason = result.reasons.filter(r => r.includes('conflicting technology stack'));
-    expect(stackReason).toHaveLength(0);
-  });
-});
-
-describe('detectClarifications — clean request (no triggers)', () => {
-  it('returns needed=false for a well-formed request with context', () => {
-    const result = detectClarifications(
-      'add JWT authentication middleware to the Express router with role-based access control',
-      3
-    );
-    // Should have no triggers (>10 words, has domain nouns, no stack conflict, has context)
-    expect(result.needed).toBe(false);
-    expect(result.questions).toHaveLength(0);
-  });
-
-  it('returns questions array when needed=true', () => {
-    const result = detectClarifications('add auth', 5);
-    expect(result.needed).toBe(true);
-    expect(result.questions.length).toBeGreaterThan(0);
     result.questions.forEach(q => expect(typeof q).toBe('string'));
+  });
+
+  it('reasons are always strings', () => {
+    const result = detectClarifications('add auth', 0);
+    result.reasons.forEach(r => expect(typeof r).toBe('string'));
+  });
+
+  it('needed=true whenever reasons is non-empty', () => {
+    const cases = [
+      { req: 'add auth', files: 0 },
+      { req: 'the thing', files: 5 },
+    ];
+    for (const { req, files } of cases) {
+      const r = detectClarifications(req, files);
+      if (r.reasons.length > 0) expect(r.needed).toBe(true);
+      if (r.needed) expect(r.reasons.length).toBeGreaterThan(0);
+    }
   });
 });

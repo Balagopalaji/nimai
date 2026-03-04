@@ -1,0 +1,16 @@
+{
+  "_meta": {
+    "benchmark": "chatmasala-data-model",
+    "iteration": 1,
+    "date": "2026-03-04",
+    "nimai_version": "0.2.2",
+    "prompt_schema_version": "1",
+    "reviewer_model": "claude-sonnet-4-6",
+    "note": "Schema v1 format — issues are strings. v2 (object[] with severity) introduced in 0.3.0."
+  },
+  "passed": false,
+  "issues": [
+    "scope_coherence: Conceptual lifecycle states (open, agent_assigned, handed_off) are used in descriptions but not mapped to persisted enum values (active, pending_handoff, closed). A builder cannot determine which vocabulary to implement.",
+    "scope_coherence: Module boundary not explicitly defined — unclear which layers own state transitions."
+  ]
+}

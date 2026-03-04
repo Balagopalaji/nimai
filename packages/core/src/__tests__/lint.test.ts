@@ -101,9 +101,56 @@ describe('lintContent', () => {
       '## Context Layer',
       '## Prompt Layer',
       '## Governance & Validation',
+      '<!-- nimai-spec: 2026-01-01 -->',
     ].join('\n');
     const issues = lintContent(content);
     const hard = issues.filter(i => !i.advisory);
     expect(hard).toHaveLength(0);
+  });
+
+  describe('pre_checked_ac rule', () => {
+    it('flags a pre-checked list item as hard fail', () => {
+      const issues = lintContent('- [x] Done already\n- [ ] Still pending');
+      const found = issues.filter(i => i.type === 'pre_checked_ac');
+      expect(found).toHaveLength(1);
+      expect(found[0].advisory).toBeFalsy();
+      expect(found[0].line).toBe(1);
+    });
+
+    it('flags multiple pre-checked items with correct line numbers', () => {
+      const content = '- [ ] ok\n- [x] bad1\n- [ ] ok\n- [x] bad2';
+      const found = lintContent(content).filter(i => i.type === 'pre_checked_ac');
+      expect(found).toHaveLength(2);
+      expect(found[0].line).toBe(2);
+      expect(found[1].line).toBe(4);
+    });
+
+    it('does not flag inline [x] (risk tier checkboxes)', () => {
+      const issues = lintContent('Risk tier: [ ] Low [x] Medium [ ] High');
+      expect(issues.some(i => i.type === 'pre_checked_ac')).toBe(false);
+    });
+
+    it('does not flag unchecked list items', () => {
+      const issues = lintContent('- [ ] Not done yet\n- [ ] Also pending');
+      expect(issues.some(i => i.type === 'pre_checked_ac')).toBe(false);
+    });
+  });
+
+  describe('missing_marker rule', () => {
+    it('emits advisory when no nimai-spec marker present', () => {
+      const found = lintContent('some spec content').filter(i => i.type === 'missing_marker');
+      expect(found).toHaveLength(1);
+      expect(found[0].advisory).toBe(true);
+    });
+
+    it('does not emit when <!-- nimai-spec --> present (no date)', () => {
+      const found = lintContent('some content\n<!-- nimai-spec -->').filter(i => i.type === 'missing_marker');
+      expect(found).toHaveLength(0);
+    });
+
+    it('does not emit when <!-- nimai-spec: DATE --> present', () => {
+      const found = lintContent('content\n<!-- nimai-spec: 2026-03-04 -->').filter(i => i.type === 'missing_marker');
+      expect(found).toHaveLength(0);
+    });
   });
 });

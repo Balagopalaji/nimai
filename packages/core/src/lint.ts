@@ -5,6 +5,10 @@ import { LintIssue, LintIssueType } from './types';
 const BLANK_FIELD_RE = /_{3,}/;
 // Matches [NEEDS HUMAN INPUT...] flags
 const NHFI_RE = /\[NEEDS HUMAN INPUT/i;
+// Matches pre-checked list items: "- [x] ..." or "* [x] ..."
+const PRE_CHECKED_AC_RE = /^[-*]\s+\[x\]/im;
+// Matches the nimai-spec marker (with or without date)
+const NIMAI_MARKER_RE = /<!--\s*nimai-spec[\s:]/;
 // Required top-level sections (by heading text, case-insensitive)
 const REQUIRED_SECTIONS = [
   'pre-flight',
@@ -107,11 +111,29 @@ export function lintContent(content: string): LintIssue[] {
     }
   }
 
+  // Pre-checked acceptance criteria — hard fail: ACs must be unchecked in a draft spec
+  if (PRE_CHECKED_AC_RE.test(content)) {
+    const matchLines = lines.reduce<number[]>((acc, l, i) => {
+      if (/^[-*]\s+\[x\]/i.test(l)) acc.push(i + 1);
+      return acc;
+    }, []);
+    for (const lineNum of matchLines) {
+      issues.push(issue(lineNum, 'pre_checked_ac',
+        `Pre-checked list item on line ${lineNum} — acceptance criteria must be unchecked ([ ]) in a draft spec`));
+    }
+  }
+
   const lower = content.toLowerCase();
   for (const section of REQUIRED_SECTIONS) {
     if (!lower.includes(section)) {
       issues.push(issue(0, 'missing_section', `Required section missing: "${section}"`));
     }
+  }
+
+  // Missing nimai-spec marker — advisory: spec was not created or registered by nimai
+  if (!NIMAI_MARKER_RE.test(content)) {
+    issues.push(advisoryIssue(0, 'missing_marker',
+      'No <!-- nimai-spec --> marker found — add it so nimai can discover this spec automatically (nimai new stamps it)'));
   }
 
   const riskTier = detectRiskTier(content);

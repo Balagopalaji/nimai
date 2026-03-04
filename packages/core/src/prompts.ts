@@ -44,9 +44,10 @@ Loose request: ${request}`;
  * The reviewing LLM MUST end its response with a machine-parseable JSON verdict block:
  *   ## Verdict
  *   ```json
- *   {"passed": true, "issues": []}
+ *   {"passed": true, "schema_version": "2", "issues": []}
  *   ```
- * The host agent parses this block to drive the spec-review loop.
+ * Schema version 2: issues are objects with dimension, severity, and detail fields.
+ * The host agent parses this block (last fenced JSON block) to drive the spec-review loop.
  */
 export function buildPrompt15(specContent: string): string {
   return `You are a Specification Quality Reviewer operating under the FORGE framework.
@@ -56,30 +57,58 @@ Do NOT assess any code, code diffs, or implementation output.
 
 ## What to check
 
-Evaluate each dimension with a binary PASS or FAIL:
+Evaluate each dimension. For each one, cite the specific line, section, or text that supports your verdict.
+A verdict without citation is treated as NO_GO — do not assert PASS without evidence.
 
-1. **Binary acceptance criteria** — are all sub-task ACs measurable and unambiguous?
-2. **Scope coherence** — are in-scope and out-of-scope boundaries clearly stated and non-contradictory?
+**Dimensions:**
+
+1. **Binary acceptance criteria** — are all sub-task ACs measurable and unambiguous? Are any ACs pre-checked (- [x]) in the draft, which is always invalid?
+2. **Scope coherence** — are in-scope and out-of-scope boundaries clearly stated and non-contradictory? Check for conflicts between conceptual terminology (e.g., state names, entity names used in descriptions) and persisted/modelled representations (e.g., enums, schemas, data shapes). Any mismatch is a HARD_FAIL.
 3. **Constraint sufficiency** — do Must / Must-Not / Prefer / Escalate constraints cover the key risks?
-4. **Decomposition realism** — can each sub-task be completed within the stated 2-hour limit by a skilled agent?
+4. **Decomposition realism** — can each sub-task be completed within the stated 2-hour limit by a skilled agent? Check that sub-task dependencies are stated explicitly (if task B requires task A's output, that must be documented).
 5. **Start-without-clarification viability** — can an agent begin immediately with the context provided, without asking the human for more information?
+6. **Internal consistency** — are terms, names, and concepts used consistently throughout the spec? Flag any case where the same entity is described differently in different sections (e.g., "webhook event" in scope, "push notification" in ACs — are these the same thing?).
+
+## Severity classification
+
+For each issue, assign a severity:
+- **HARD_FAIL** — must be fixed before any agent attempts implementation; blocks build
+- **SOFT_FAIL** — significant gap, should be fixed but builder may proceed with explicit override
+- **NOTE** — advisory observation; does not block
+
+A spec passes (passed: true) only if it has zero HARD_FAIL issues.
 
 ## Output format
 
-For each check, write: **[PASS]** or **[FAIL]** followed by a one-sentence rationale.
+For each dimension, write:
+**[PASS|FAIL] Dimension name** — one-sentence rationale. *Evidence: cite the specific section/line/text.*
 
-Then write a consolidated summary listing all failing dimensions and their remediation guidance.
+Then write a consolidated remediation list for all FAIL dimensions.
 
 Note: implementation correctness is explicitly out of scope for this review.
 
 ## Important
 
 Always end your response with the following verdict block as the **final section**, regardless of pass/fail outcome.
-The host agent parses this block to drive the loop — if it is absent or malformed, the host will treat the result as ambiguous and escalate to the human.
+The host agent parses the **last fenced JSON block** in your response — if it is absent or malformed, the host treats the result as a hard failure and escalates to the human.
+
+The verdict block format (schema version 2):
 
 ## Verdict
 \`\`\`json
-{"passed": true, "issues": []}
+{
+  "passed": false,
+  "schema_version": "2",
+  "issues": [
+    {"dimension": "scope_coherence", "severity": "HARD_FAIL", "detail": "Conceptual state 'active' not mapped to persisted enum value"},
+    {"dimension": "decomposition_realism", "severity": "NOTE", "detail": "Sub-task 3 may exceed 2h limit if schema migration is complex"}
+  ]
+}
+\`\`\`
+
+If the spec passes all dimensions with no HARD_FAIL issues, use:
+\`\`\`json
+{"passed": true, "schema_version": "2", "issues": []}
 \`\`\`
 
 ---

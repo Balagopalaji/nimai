@@ -6,7 +6,9 @@ export type LintIssueType =
   | 'missing_interface_contract'
   | 'missing_non_goals'
   | 'missing_change_surface'
-  | 'missing_dependency_direction';
+  | 'missing_dependency_direction'
+  | 'pre_checked_ac'
+  | 'missing_marker';
 
 export interface LintIssue {
   line: number;

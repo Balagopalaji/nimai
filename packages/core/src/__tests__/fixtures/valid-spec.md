@@ -33,3 +33,5 @@ Opening instruction: You are a spec engineering agent.
 ## Governance & Validation
 
 Escalation: Stop if cost exceeds budget.
+
+<!-- nimai-spec: 2026-01-01 -->
