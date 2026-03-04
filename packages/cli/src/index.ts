@@ -24,15 +24,15 @@ program
   .option('--standalone', 'Call the model directly to generate the draft spec')
   .option('--repo <path>', 'Path to the repository root for context extraction', process.cwd())
   .option('--out <file>', 'Write output to file instead of stdout')
-  .option('--validate', 'Run lint on the generated spec after --standalone generation (not valid with --hosted)')
-  .option('--allow-invalid', 'Exit 0 even when --validate finds issues (requires --validate)')
+  .option('--no-validate', 'Skip lint after --standalone generation (lint runs by default in --standalone mode)')
+  .option('--allow-invalid', 'Exit 0 even when lint finds issues (only applies in --standalone mode)')
   .option('--model <id>', 'Model ID for --standalone mode (overrides .nimai/config.yaml)')
   .action((request: string, options: {
     hosted?: boolean;
     standalone?: boolean;
     repo: string;
     out?: string;
-    validate?: boolean;
+    validate: boolean; // Commander --no-validate sets this to false; default true
     allowInvalid?: boolean;
     model: string;
   }) => {
@@ -41,7 +41,7 @@ program
       standalone: !!options.standalone,
       repoPath: options.repo,
       out: options.out,
-      validate: !!options.validate,
+      validate: options.standalone ? options.validate !== false : false,
       allowInvalid: !!options.allowInvalid,
       model: options.model,
     }).catch(err => {

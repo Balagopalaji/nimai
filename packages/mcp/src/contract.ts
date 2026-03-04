@@ -103,7 +103,8 @@ export const TOOL_DESCRIPTORS = {
     name: 'nimai_validate',
     description:
       'Lints a spec file for unresolved placeholder fields (___), [NEEDS HUMAN INPUT] flags, ' +
-      'and missing required sections. Returns structured issues and a pass/fail result.',
+      'missing required sections, and pre-checked acceptance criteria. Returns structured issues and a pass/fail result. ' +
+      'Run this after filling a spec and again after every fix — before calling nimai_spec_review.',
     inputSchema: ForgeValidateInput,
   },
   nimai_new: {
@@ -117,7 +118,8 @@ export const TOOL_DESCRIPTORS = {
     description:
       'USE THIS BEFORE BUILDING: evaluates whether a draft spec is ready to hand to a builder. ' +
       'Returns a Prompt 1.5 (spec-quality reviewer) — pass it to an LLM to get a {passed, issues} verdict. ' +
-      'If passed=false, loop back to nimai_spec with the issues. ' +
+      'Only call this after nimai_validate passes. ' +
+      'If passed=false, fix the spec directly using the issues list, re-run nimai_validate, then call this again — do NOT re-call nimai_spec. ' +
       'For reviewing an implementation against an approved spec, use nimai_review instead.',
     inputSchema: ForgeSpecReviewInput,
   },

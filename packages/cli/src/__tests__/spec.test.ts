@@ -55,14 +55,14 @@ describe('runSpec flag validation', () => {
     await expect(
       runSpec('request', { ...BASE_OPTIONS, hosted: true, standalone: false, validate: true, adapter: makeAdapter('x') })
     ).rejects.toThrow('process.exit(1)');
-    expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('--validate is only supported with --standalone'));
+    expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('lint is only supported with --standalone'));
   });
 
   it('exits 1 when --allow-invalid is set without --validate', async () => {
     await expect(
       runSpec('request', { ...BASE_OPTIONS, validate: false, allowInvalid: true, adapter: makeAdapter('x') })
     ).rejects.toThrow('process.exit(1)');
-    expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('--allow-invalid requires --validate'));
+    expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('--allow-invalid only applies when lint is enabled'));
   });
 });
 

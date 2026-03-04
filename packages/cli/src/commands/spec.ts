@@ -28,7 +28,7 @@ export async function runSpec(request: string, options: SpecOptions): Promise<vo
 
   if (options.hosted && options.validate) {
     console.error(
-      'Error: --validate is only supported with --standalone.\n' +
+      'Error: lint is only supported with --standalone.\n' +
       'Use --standalone (and optionally --out) or run: nimai validate <file>'
     );
     process.exit(1);
@@ -36,8 +36,8 @@ export async function runSpec(request: string, options: SpecOptions): Promise<vo
 
   if (options.allowInvalid && !options.validate) {
     console.error(
-      'Error: --allow-invalid requires --validate.\n' +
-      'Add --validate to enable validation, then --allow-invalid to override exit behavior.'
+      'Error: --allow-invalid only applies when lint is enabled.\n' +
+      'In --standalone mode, lint runs by default. Pass --no-validate to disable it.'
     );
     process.exit(1);
   }
