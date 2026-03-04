@@ -16,12 +16,23 @@ const REQUIRED_SECTIONS = [
 ];
 
 // Advisory: architecture quality signals (anti-spaghetti rules)
-// Each rule looks for at least one keyword/heading indicating the concept is addressed
-const ADVISORY_RULES: { type: import('./types').LintIssueType; keywords: string[]; message: string }[] = [
+// Each rule looks for at least one keyword/heading indicating the concept is addressed.
+// Rules marked hardFailTiers become hard failures (not advisory) when the spec's risk tier
+// matches AND (if codingOnly=true) the spec is a coding/tooling/server spec.
+const ADVISORY_RULES: {
+  type: import('./types').LintIssueType;
+  keywords: string[];
+  message: string;
+  hardFailTiers?: string[];       // risk tiers that trigger hard fail
+  codingOnly?: boolean;           // only hard-fail for coding/tooling/server specs
+  skipAdvisoryForTiers?: string[]; // skip even advisory for these risk tiers
+}[] = [
   {
     type: 'missing_module_boundary',
-    keywords: ['module boundary', 'package boundary', 'layer boundary', 'separation of concerns', 'packages/core', 'packages/mcp', 'packages/cli'],
-    message: 'No module boundary definition found — consider documenting package/layer boundaries',
+    keywords: ['module boundary', 'package boundary', 'layer boundary', 'separation of concerns', 'packages/core', 'packages/mcp', 'packages/cli', 'app/models', 'app/state', 'app/db'],
+    message: 'No module boundary definition found — document package/layer boundaries and which layers may not import each other',
+    hardFailTiers: ['medium', 'high'],
+    codingOnly: true,
   },
   {
     type: 'missing_interface_contract',
@@ -31,12 +42,22 @@ const ADVISORY_RULES: { type: import('./types').LintIssueType; keywords: string[
   {
     type: 'missing_non_goals',
     keywords: ['non-goal', 'non-goals', 'must-not', 'scope — out', 'out of scope', 'deferred', 'excluded'],
-    message: 'No non-goals or out-of-scope section found — consider documenting what this spec explicitly excludes',
+    message: 'No non-goals or out-of-scope section found — document what this spec explicitly excludes',
+    hardFailTiers: ['medium', 'high'],
   },
   {
     type: 'missing_change_surface',
     keywords: ['change surface', 'breaking change', 'migration', 'backward compat', 'semver', 'versioning', 'deprecat'],
-    message: 'No change surface documentation found — consider documenting compatibility expectations',
+    message: 'No change surface documentation found — document compatibility expectations and what this spec must not break',
+    hardFailTiers: ['medium', 'high'],
+  },
+  {
+    type: 'missing_dependency_direction',
+    keywords: ['dependency direction', 'may not import', 'must not import', 'import from', 'no cross-layer', 'dependency rule', 'import rule'],
+    message: 'No dependency direction rules found — document which modules/layers may import which (prevents circular and cross-layer dependencies)',
+    hardFailTiers: ['medium', 'high'],
+    codingOnly: true,
+    skipAdvisoryForTiers: ['low', 'unknown'],
   },
 ];
 
@@ -48,6 +69,26 @@ export function lintSpec(filePath: string): LintIssue[] {
     throw new Error(`Cannot read spec at "${filePath}": ${(err as NodeJS.ErrnoException).message}`);
   }
   return lintContent(content);
+}
+
+/** Detect risk tier from checked checkbox in spec content */
+function detectRiskTier(content: string): 'low' | 'medium' | 'high' | 'unknown' {
+  if (/\[x\]\s*high/i.test(content)) return 'high';
+  if (/\[x\]\s*medium/i.test(content)) return 'medium';
+  if (/\[x\]\s*low/i.test(content)) return 'low';
+  return 'unknown';
+}
+
+/** Detect if this is a coding/tooling/server spec (vs docs/research/strategy) */
+function isCodingSpec(content: string): boolean {
+  const lower = content.toLowerCase();
+  return (
+    lower.includes('if coding') ||
+    lower.includes('language / framework') ||
+    lower.includes('language/framework') ||
+    lower.includes('test coverage expectation') ||
+    lower.includes('performance targets')
+  );
 }
 
 export function lintContent(content: string): LintIssue[] {
@@ -73,10 +114,22 @@ export function lintContent(content: string): LintIssue[] {
     }
   }
 
+  const riskTier = detectRiskTier(content);
+  const coding = isCodingSpec(content);
+
   for (const rule of ADVISORY_RULES) {
     const found = rule.keywords.some(kw => lower.includes(kw.toLowerCase()));
     if (!found) {
-      issues.push(advisoryIssue(0, rule.type, rule.message));
+      const shouldHardFail =
+        rule.hardFailTiers !== undefined &&
+        rule.hardFailTiers.includes(riskTier) &&
+        (!rule.codingOnly || coding);
+
+      if (shouldHardFail) {
+        issues.push(issue(0, rule.type, `${rule.message} [required for ${riskTier}-risk${rule.codingOnly ? ' coding' : ''} specs]`));
+      } else if (!rule.skipAdvisoryForTiers?.includes(riskTier)) {
+        issues.push(advisoryIssue(0, rule.type, rule.message));
+      }
     }
   }
 

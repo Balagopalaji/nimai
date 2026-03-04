@@ -5,7 +5,8 @@ export type LintIssueType =
   | 'missing_module_boundary'
   | 'missing_interface_contract'
   | 'missing_non_goals'
-  | 'missing_change_surface';
+  | 'missing_change_surface'
+  | 'missing_dependency_direction';
 
 export interface LintIssue {
   line: number;
