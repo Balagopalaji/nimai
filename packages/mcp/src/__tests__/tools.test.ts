@@ -161,6 +161,8 @@ describe('nimai_spec_review tool', () => {
     expect(typeof result.reviewer_instructions).toBe('string');
     expect(result.reviewer_instructions).toContain('INDEPENDENT REVIEW REQUIRED');
     expect(result.reviewer_instructions).toContain('FRESH SESSION');
+    expect(result.reviewer_instructions).toContain('BUILDER FIX BRIEF');
+    expect(result.reviewer_instructions).toContain('Do not regenerate from scratch');
   });
 
   it('prompt contains Spec-Quality Reviewer header', async () => {
