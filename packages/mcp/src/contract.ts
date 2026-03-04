@@ -47,6 +47,12 @@ export interface ForgeSpecOutput {
   /** Repo context items extracted for the request */
   context: ContextItem[];
   /**
+   * Existing nimai-managed spec files found in the repo (sorted newest-first).
+   * Empty array means no spec file exists yet — call nimai_new before filling the spec.
+   * Non-empty means spec files already exist — you may fill one of these instead of creating a new one.
+   */
+  existing_specs: string[];
+  /**
    * Concrete follow-up questions when request ambiguity blocks reliable spec drafting.
    * Triggered when request is under 10 words OR zero repo files matched.
    * Optional — absent when no clarification is needed.
@@ -89,9 +95,10 @@ export const TOOL_DESCRIPTORS = {
     description:
       'Returns a populated FORGE Self-Spec Agent prompt (Prompt 1) plus extracted repo context. ' +
       'The host model uses this bundle to fill a draft spec — no LLM call is made inside this tool. ' +
-      'FULL LOOP: (1) call nimai_new to scaffold the spec file, (2) call this tool to get the prompt bundle, ' +
-      '(3) fill the scaffolded spec using the returned prompt, (4) call nimai_validate, ' +
-      '(5) call nimai_spec_review. Do not skip nimai_new — without it there is no spec file to fill.',
+      'Also returns existing_specs: paths of nimai-managed spec files already in the repo. ' +
+      'If existing_specs is empty, call nimai_new first to scaffold a spec file, then fill it using the returned prompt. ' +
+      'If existing_specs is non-empty, fill one of those files instead. ' +
+      'After filling: call nimai_validate, then nimai_spec_review.',
     inputSchema: ForgeSpecInput,
   },
   nimai_review: {

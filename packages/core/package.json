@@ -1,6 +1,6 @@
 {
   "name": "nimai-core",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "description": "Nimai core library — template loading, lint engine, context extraction. No LLM dependencies.",
   "keywords": ["nimai", "forge", "spec", "lint", "ai", "llm", "specification", "template"],
   "license": "MIT",

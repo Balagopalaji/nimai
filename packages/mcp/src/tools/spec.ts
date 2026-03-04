@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { extractContext, buildPrompt1, detectClarifications } from 'nimai-core';
+import { extractContext, buildPrompt1, detectClarifications, findNimaiSpecs } from 'nimai-core';
 import { ForgeSpecInput, ForgeSpecOutput } from '../contract';
 import { z } from 'zod';
 
@@ -19,7 +19,9 @@ export async function toolSpec(
 
   const prompt = buildPrompt1(input.request, contextSummary);
 
-  const result: ForgeSpecOutput = { prompt, context };
+  const existingSpecs = findNimaiSpecs(repoPath).map(s => s.filePath);
+
+  const result: ForgeSpecOutput = { prompt, context, existing_specs: existingSpecs };
 
   const clarification = detectClarifications(input.request, context.length);
   if (clarification.needed) {

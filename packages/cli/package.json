@@ -1,6 +1,6 @@
 {
   "name": "nimai-cli",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "description": "Nimai CLI — spec ops for AI work. nimai spec, review, validate, and new.",
   "keywords": ["nimai", "forge", "cli", "spec", "ai", "llm", "specification", "mcp", "anthropic", "openai", "ollama"],
   "license": "MIT",

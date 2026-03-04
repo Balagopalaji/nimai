@@ -61,11 +61,27 @@ describe('nimai_validate tool', () => {
 });
 
 describe('nimai_spec tool', () => {
-  it('returns a prompt string and context array', async () => {
+  it('returns a prompt string, context array, and existing_specs array', async () => {
     const result = await toolSpec({ repoPath: FORGE_ROOT, request: 'add JWT auth' });
     expect(typeof result.prompt).toBe('string');
     expect(result.prompt.length).toBeGreaterThan(100);
     expect(Array.isArray(result.context)).toBe(true);
+    expect(Array.isArray(result.existing_specs)).toBe(true);
+  });
+
+  it('existing_specs contains nimai-marked spec files from the repo', async () => {
+    const result = await toolSpec({ repoPath: FORGE_ROOT, request: 'add JWT auth' });
+    // FORGE_ROOT has at least the dogfood spec and the template
+    expect(result.existing_specs.length).toBeGreaterThan(0);
+    result.existing_specs.forEach(p => expect(typeof p).toBe('string'));
+  });
+
+  it('existing_specs is empty for a repo with no nimai specs', async () => {
+    const os = await import('os');
+    const tmpDir = fs.mkdtempSync(require('path').join(os.tmpdir(), 'nimai-spec-test-'));
+    const result = await toolSpec({ repoPath: tmpDir, request: 'add JWT authentication middleware to the API' });
+    expect(result.existing_specs).toHaveLength(0);
+    fs.rmSync(tmpDir, { recursive: true });
   });
 
   it('prompt contains FORGE Self-Spec Agent header', async () => {
